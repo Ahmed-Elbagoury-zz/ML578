@@ -1,6 +1,6 @@
-from sklearn.decomposition import PCA
+from sklearn.decomposition import PCA, KernelPCA
 import numpy as np
-
+from helper import load_data
 class MyPCA(object):
 	def fit(self, data, n_components):
 		self.pca = PCA(n_components=n_components)
@@ -10,24 +10,17 @@ class MyPCA(object):
 		return self.pca.transform(data)
 
 
+class MyKernelPCA(object):
+	def fit(self, data, n_components):
+		#self.pca = PCA(n_components=n_components)
+		self.pca = KernelPCA(n_components = n_components, kernel = 'rbf', gamma = 10)
+		self.pca.fit(data)
+	def transform(self, data):
+		return self.pca.transform(data)
 
 if __name__ == '__main__':
-	myPca = MyPCA()
-	X = np.array([[-1, -1], [-2, -1], [-3, -2], [1, 1], [2, 1], [3, 2]])
-	myPca.fit(X, n_components= 2)
-	y = np.array([[1, 2], [3, 4], [5, 6]])
-	print myPca.transform(y)
-
-
-# from sklearn.datasets import load_iris
-# from sklearn.feature_selection import SelectKBest
-# from sklearn.feature_selection import chi2
-# iris = load_iris()
-# X, y = iris.data, iris.target
-# print X.shape
-# from sklearn.svm import LinearSVC
-# from sklearn.feature_selection import SelectFromModel
-# lsvc = LinearSVC(C=0.01, penalty="l1", dual=False).fit(X, y)
-# model = SelectFromModel(lsvc, prefit=True)
-# X_new = model.transform(X)
-# print X_new.shape
+	input_path = '0_train.csv'
+	data, labels = load_data(input_path)
+	print data.shape
+	myKernelPCA = MyKernelPCA()
+	myKernelPCA.fit(data, n_components = 2)
