@@ -21,6 +21,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
     data = np.array([[float(elem) for elem in line[2:]] for line in lines])
     labels = np.array([[int(elem) for elem in line[1]] for line in lines])
     features_number = len(data[0])
+    measures = np.zeros([4, k])
     for i in range(k):
         start_i = int(math.floor(samples_number * i / k))
         end_i = int(math.floor(samples_number * (i + 1) / k))
@@ -85,20 +86,21 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             predicted_labels = classify(linear_svm_model, validation_data)
             error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                    labels[validation_index])
-            print('error = ', error)
-            print('recall = ', recall)
-            print('precision = ', precision)
-            print('specificity = ', specificity)
+            measures[0, i] = error
+            measures[1, i] = recall
+            measures[2, i] = precision
+            measures[3, i] = specificity
         if 'kernel_svm' in methods_to_run: # Run Kernel SVM.
             C = options[1]
             kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C)
             predicted_labels = classify(kernel_svm_model, validation_data)
             error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                    labels[validation_index])
-            print('error = ', error)
-            print('recall = ', recall)
-            print('precision = ', precision)
-            print('specificity = ', specificity)
+            measures[0, i] = error
+            measures[1, i] = recall
+            measures[2, i] = precision
+            measures[3, i] = specificity
                 
         if 'preceptron' in methods_to_run: # Run multilayer preceptron.
             print('preceptron')
+    return np.mean(measures, 1), np.std(measures, 1)
