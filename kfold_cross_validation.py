@@ -4,6 +4,9 @@ from my_PCA import MyPCA
 import numpy as np
 from matplotlib import pyplot
 import os.path as path
+from calculate_performance_measures import calculate_performance_measures
+from svm import *
+from fea_selection import *
 def kfold_cross_validation(k, train_file, methods_to_run,
                            output_folder, options):
     train_csvfile = open(train_file,'rb')
@@ -27,6 +30,8 @@ def kfold_cross_validation(k, train_file, methods_to_run,
         train_labels = labels[train_index, :]
         zero_indices = [j for j in range(len(train_labels)) if train_labels[j] == 0]
         one_indices = [j for j in range(len(train_labels)) if train_labels[j] == 1]
+        train_data = data[train_index, :]
+        validation_data = data[validation_index, :]
         if 'features_histogram' in methods_to_run:
             # Caclulate features histogram for each fold training data.
             for feature in range(features_number):
@@ -43,20 +48,10 @@ def kfold_cross_validation(k, train_file, methods_to_run,
         if 'pca' in methods_to_run:
             # Run PCA.
             myPca = MyPCA()
-            train_data = data[train_index, :]
-            #print(train_data[5566, :])
-            #print(train_data[8660, :])
-            #train_data = np.delete(train_data, [2695,5789,24610], 0)
-            #train_labels = np.delete(train_labels, [2695,5789,24610], 0)
-            zero_indices = [j for j in range(len(train_labels)) if train_labels[j] == 0]
-            one_indices = [j for j in range(len(train_labels)) if train_labels[j] == 1]
             myPca.fit(train_data, n_components = 2)
             # Visualize the training data.
             projected_data = myPca.transform(train_data)
             pyplot.figure()
-            #projected_data_np = np.array(projected_data[zero_indices, 0])
-            #points_index_np = np.array(range(len(projected_data_np)))
-            #print(points_index_np[projected_data_np >= 3e9])
             pyplot.plot(projected_data[zero_indices, 0], projected_data[zero_indices, 1],
                         'o', color = 'r')
             pyplot.plot(projected_data[one_indices, 0], projected_data[one_indices, 1],
@@ -64,11 +59,35 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             pyplot.savefig(path.join(output_folder, 'pca_fold=' +
                                      str(i) + '.png'))
             pyplot.close()
-        if 'f1' in methods_to_run: # Run feature selection
-            print('f1')
-        if 'f2' in methods_to_run: # Run feature selection
-            print('f2')
-        if 'svm' in methods_to_run: # Run SVM.
-            print('svm')
+        if 'univariate_fea_selection' in methods_to_run:
+            # Run feature selection.
+            number_of_features_to_select = options[0]
+            selected_features_indices = univariate_fea_selection(data[train_index, :],
+                                                                 labels[train_index], number_of_features_to_select)
+            train_data = train_data[:, selected_features_indices]
+            validation_data = validation_data[:, selected_features_indices]
+            selected_featuees = np.array(header)[selected_features_indices]
+            for selected_feature in range(len(selected_featuees)):
+                print(selected_featuees[selected_feature])
+        if 'linear_SVC' in methods_to_run:
+            # Run feature selection.
+            sparsity_param = options[0]
+            selected_features_indices = my_SelectFromModel(data[train_index, :],
+                                                           labels[train_index], sparsity_param)
+            train_data = train_data[:, selected_features_indices]
+            validation_data = validation_data[:, selected_features_indices]
+            selected_featuees = np.array(header)[selected_features_indices]
+            for selected_feature in range(len(selected_featuees)):
+                print(selected_featuees[selected_feature])
+        if 'linear_svm' in methods_to_run: # Run linear SVM.
+            C = options[1]
+            linear_svm_model = train_linear_svm(train_data, labels[train_index], C)
+            predicted_labels = classify(linear_svm_model, validation_data)
+            error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                   labels[validation_index])
+            print('error = ', error)
+            print('recall = ', recall)
+            print('precision = ', precision)
+            print('specificity = ', specificity)
         if 'preceptron' in methods_to_run: # Run multilayer preceptron.
             print('preceptron')

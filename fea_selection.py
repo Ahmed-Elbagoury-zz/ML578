@@ -3,11 +3,16 @@ from sklearn.feature_selection import chi2
 from sklearn.svm import LinearSVC
 from sklearn.feature_selection import SelectFromModel
 
-def univariate_fea_selection(X, y):
-	return SelectKBest(chi2, k=2).fit_transform(X, y)
+def univariate_fea_selection(X, y, k):
+	selector = SelectKBest(chi2, k=k)
+	selector.fit(X, y)
+	indices = selector.get_support(indices=True)
+	return indices
 
-def SelectFromModel(X, y, sparsity_param):
+def my_SelectFromModel(X, y, sparsity_param):
 	lsvc = LinearSVC(C=sparsity_param, penalty="l1", dual=False).fit(X, y)
 	model = SelectFromModel(lsvc, prefit=True)
-	X_new = model.transform(X)
-	return X_new
+	# X_new = model.transform(X)
+	index_flag = model.get_support()
+	indices = [i for i in range(len(index_flag)) if index_flag[i]]
+	return indices

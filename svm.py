@@ -1,22 +1,16 @@
 import numpy as np
 from sklearn import svm
-from helper import load_data
-def train_svm(input_path):
-	data, labels = load_data(input_path)
-	clf = svm.SVC()
-	clf.fit(data, labels)
-	print lin_clf.decision_function(data[0])
+def train_kernel_svm (data, labels, c):
+	clf = svm.SVC(C = c)
+	clf.fit(data, labels.ravel())
 	return clf
 
-def train_linear_svm(input_path):
-	data, labels = load_data(input_path)
-	print len(data)
-	lin_clf = svm.LinearSVC()
-	lin_clf.fit(data, labels)
-	print lin_clf.decision_function(data[0])
-	return clf
+def train_linear_svm (data, labels, c):
+	lin_clf = svm.LinearSVC(C = c)
+	lin_clf.fit(data, labels.ravel())
+	return lin_clf
 
-if __name__ == '__main__':
-	input_path = '0_train.csv'
-	# train_svm(input_path)
-	train_linear_svm(input_path)
+def classify (clf, test_data):
+	pred = clf.decision_function(test_data)
+	pred = [clf.classes_[1] if val > 0 else clf.classes_[0] for val in pred]
+	return pred
