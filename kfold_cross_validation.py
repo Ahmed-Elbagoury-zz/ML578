@@ -89,5 +89,16 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             print('recall = ', recall)
             print('precision = ', precision)
             print('specificity = ', specificity)
+        if 'kernel_svm' in methods_to_run: # Run Kernel SVM.
+            C = options[1]
+            kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C)
+            predicted_labels = classify(kernel_svm_model, validation_data)
+            error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                   labels[validation_index])
+            print('error = ', error)
+            print('recall = ', recall)
+            print('precision = ', precision)
+            print('specificity = ', specificity)
+                
         if 'preceptron' in methods_to_run: # Run multilayer preceptron.
             print('preceptron')
