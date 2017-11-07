@@ -68,8 +68,8 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             train_data = train_data[:, selected_features_indices]
             validation_data = validation_data[:, selected_features_indices]
             selected_featuees = np.array(header)[selected_features_indices]
-            for selected_feature in range(len(selected_featuees)):
-                print(selected_featuees[selected_feature])
+            # for selected_feature in range(len(selected_featuees)):
+            #     print(selected_featuees[selected_feature])
         if 'linear_SVC' in methods_to_run:
             # Run feature selection.
             sparsity_param = options[0]
@@ -78,8 +78,8 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             train_data = train_data[:, selected_features_indices]
             validation_data = validation_data[:, selected_features_indices]
             selected_featuees = np.array(header)[selected_features_indices]
-            for selected_feature in range(len(selected_featuees)):
-                print(selected_featuees[selected_feature])
+            # for selected_feature in range(len(selected_featuees)):
+            #     print(selected_featuees[selected_feature])
         if 'linear_svm' in methods_to_run: # Run linear SVM.
             C = options[1]
             linear_svm_model = train_linear_svm(train_data, labels[train_index], C)
@@ -100,7 +100,17 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             measures[1, i] = recall
             measures[2, i] = precision
             measures[3, i] = specificity
-                
+        if 'one_class_svm' in methods_to_run:
+            temp = np.array([label[0] for label in train_labels]) == 0
+            train_data = train_data[temp, :]
+            one_class_svm_model = train_one_class_svm(train_data, options[-1], nu = 1e-4, gamma = 4) #gamma = 1.0/train_data.shape[0])
+            predicted_labels = classify_one_class_svm(one_class_svm_model, validation_data)
+            error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                   labels[validation_index])
+            measures[0, i] = error
+            measures[1, i] = recall
+            measures[2, i] = precision
+            measures[3, i] = specificity
         if 'preceptron' in methods_to_run: # Run multilayer preceptron.
             print('preceptron')
     return np.mean(measures, 1), np.std(measures, 1)

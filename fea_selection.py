@@ -10,7 +10,7 @@ def univariate_fea_selection(X, y, k):
 	return indices
 
 def my_SelectFromModel(X, y, sparsity_param):
-	lsvc = LinearSVC(C=sparsity_param, penalty="l1", dual=False).fit(X, y)
+	lsvc = LinearSVC(C=sparsity_param, penalty="l1", dual=False).fit(X, y.ravel())
 	model = SelectFromModel(lsvc, prefit=True)
 	# X_new = model.transform(X)
 	index_flag = model.get_support()
