@@ -20,7 +20,7 @@ def select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg,
         for c in c_vals:
             print '\tC = %f' %(c)
             mean, var = kfold_cross_validation(k, train_file, [fea_selection_alg, classification_alg], output_folder,
-                                               [number_of_features_to_select, c, kernel])
+                                               [number_of_features_to_select, c, kernel, 0])
             output_file = open('%s/stats.txt' %(output_folder), 'a')
             output_file.write('%f\t' %(c))
             vals_to_plot.append([])

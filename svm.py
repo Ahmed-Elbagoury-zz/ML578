@@ -1,17 +1,17 @@
 import numpy as np
 from sklearn import svm
 def train_kernel_svm (data, labels, c):
-	clf = svm.SVC(C = c)
+	clf = svm.SVC(C = c, random_state=0)
 	clf.fit(data, labels.ravel())
 	return clf
 
 def train_linear_svm (data, labels, c):
-	lin_clf = svm.LinearSVC(C = c)
+	lin_clf = svm.LinearSVC(C = c, random_state=0)
 	lin_clf.fit(data, labels.ravel())
 	return lin_clf
 
 def train_one_class_svm(data, kernel, nu, gamma):
-	clf = svm.OneClassSVM(nu=nu, kernel=kernel, gamma=gamma)
+	clf = svm.OneClassSVM(nu=nu, kernel=kernel, gamma=gamma, random_state=0)
 	clf.fit(data)
 	return clf
 def classify_one_class_svm(clf, test_data):

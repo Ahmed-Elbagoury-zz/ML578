@@ -155,4 +155,26 @@ def run (step_number):
         kernel = 'rbf'
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
                                         c_vals, k, number_of_features_to_select)
+    elif step_number == 17:
+        # Step 17: For submitting on Kaggle, join the Kaggle test data with the other tables.
+        transcations_output_filename = 'transactions_preprocessed.csv'
+        user_logs_output_filename = 'user_logs_preprocessed.csv'
+        train_input_filename = 'sample_submission.csv'
+        member_input_filename = 'members.csv'
+        joined_table_output_filename = 'joined_test_data.csv'
+        join_tables(transcations_output_filename, user_logs_output_filename,
+                    train_input_filename, member_input_filename,
+                    joined_table_output_filename)
+    elif step_number == 18:
+        # Step 18: Classify Kaggle test user, using SVM with C learned form 10 fold cross validation.
+        train_file = 'joined_train_data.csv'
+        test_file = 'joined_test_data.csv'
+        methods_to_run = ['univariate_fea_selection', 'linear_svm']
+        number_of_features_to_select = 7
+        C = 10
+        kernel = 'linear'
+        write_prediction = 1
+        prediction_file = 'prediction.csv'
+        options = [number_of_features_to_select, C, kernel, write_prediction, prediction_file]
+        classify_test_users(train_file, test_file, methods_to_run, options)
 
