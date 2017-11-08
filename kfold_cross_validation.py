@@ -7,6 +7,8 @@ import os.path as path
 from calculate_performance_measures import calculate_performance_measures
 from svm import *
 from fea_selection import *
+from scipy import stats
+import scipy as sp
 def kfold_cross_validation(k, train_file, methods_to_run,
                            output_folder, options):
     train_csvfile = open(train_file,'rb')
@@ -113,4 +115,19 @@ def kfold_cross_validation(k, train_file, methods_to_run,
             measures[3, i] = specificity
         if 'preceptron' in methods_to_run: # Run multilayer preceptron.
             print('preceptron')
-    return np.mean(measures, 1), np.std(measures, 1)
+    # return np.mean(measures, 1), np.std(measures, 1)
+    stats_vals = []
+    alpha_val = 0.95
+    for i in range(4):
+        print i, measures[i, :]
+        mean, error = mean_confidence_interval(measures[i, :], alpha_val)
+        stats_vals.append([mean, error])
+        # print stats_vals[-1]
+    return stats_vals
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0*np.array(data)
+    n = len(a)
+    m, se = np.mean(a), sp.stats.sem(a)
+    h = se * sp.stats.t._ppf((1+confidence)/2., n-1)
+    return m, h

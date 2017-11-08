@@ -6,6 +6,7 @@ from generate_histograms import generate_histograms
 from kfold_cross_validation import kfold_cross_validation
 from select_c_for_SVM_using_kfold_CV import select_c_for_SVM_using_kfold_CV
 import os.path as path
+
 def run (step_number):
     if step_number == 1:
         # Step 1: Preprocess transcation data.
@@ -156,3 +157,5 @@ def run (step_number):
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
                                         c_vals, k, number_of_features_to_select)
 
+if __name__ == '__main__':
+    run(13)
