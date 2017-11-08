@@ -4,6 +4,7 @@ from join_tables import join_tables
 from split_data_random import split_data_random
 from generate_histograms import generate_histograms
 from kfold_cross_validation import kfold_cross_validation
+from select_c_for_SVM_using_kfold_CV import select_c_for_SVM_using_kfold_CV
 import os.path as path
 def run (step_number):
     if step_number == 1:
@@ -49,26 +50,109 @@ def run (step_number):
         k = 10
         kfold_cross_validation(k, train_file, ['pca'], output_folder, [])
     elif step_number == 7:
-        # Step 7: Run linear SVM with univariate_fea_selection fearure selection.
+        # Step 7: Run univariate_fea_selection fearure selection.
         train_file = path.join('train_subsets', '0_train.csv')
-        output_folder = 'linear_svm'
+        output_folder = 'univariate_fea_selection'
         k = 10
         C = 10
         number_of_features_to_select = 7
-        measures_means, measures_stds = kfold_cross_validation(k, train_file, ['univariate_fea_selection', 'linear_svm'],
+        measures_means, measures_stds = kfold_cross_validation(k, train_file, ['univariate_fea_selection'],
                                                                output_folder, [number_of_features_to_select, C])
-        # print(list(measures_means))
-        # print(list(measures_stds))
     elif step_number == 8:
-        # Step 8: Run linear SVM with linear_SVC fearure selection.
+        # Step 8: Run linear_SVC fearure selection.
         train_file = path.join('train_subsets', '0_train.csv')
-        output_folder = 'linear_svm'
+        output_folder = 'linear_SVC'
         k = 10
         sparsity_param = 0.0002
         C = 10
-        measures_means, measures_stds = kfold_cross_validation(k, train_file, ['linear_SVC', 'linear_svm'],
+        measures_means, measures_stds = kfold_cross_validation(k, train_file, ['linear_SVC'],
                                                                output_folder, [sparsity_param, C])
-        # print(list(measures_means))
-        # print(list(measures_stds))
-    
-        
+    elif step_number == 9:
+        # Step 9: Run 10 fold cross validation to choose C for linear SVM with univariate_fea_selection.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'linear_svm'
+        fea_selection_alg = 'univariate_fea_selection'
+        kernel = 'linear'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 10:
+        # Step 10: Run 10 fold cross validation to choose C for linear SVM with linear_SVC.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'linear_svm'
+        fea_selection_alg = 'linear_SVC'
+        kernel = 'linear'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 11:
+        # Step 11: Run 10 fold cross validation to choose C for kernel SVM with univariate_fea_selection.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'kernel_svm'
+        fea_selection_alg = 'univariate_fea_selection'
+        kernel = 'rbf'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 12:
+        # Step 12: Run 10 fold cross validation to choose C for kernel SVM with linear_SVC.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'kernel_svm'
+        fea_selection_alg = 'linear_SVC'
+        kernel = 'rbf'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 13:
+        # Step 13: Run 10 fold cross validation to choose C for one class linear SVM with univariate_fea_selection.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'one_class_svm'
+        fea_selection_alg = 'univariate_fea_selection'
+        kernel = 'linear'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 14:
+        # Step 14: Run 10 fold cross validation to choose C for one class linear SVM with linear_SVC.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'one_class_svm'
+        fea_selection_alg = 'linear_SVC'
+        kernel = 'linear'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 15:
+        # Step 15: Run 10 fold cross validation to choose C for one class kernel SVM with univariate_fea_selection.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'one_class_svm'
+        fea_selection_alg = 'univariate_fea_selection'
+        kernel = 'rbf'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+    elif step_number == 16:
+        # Step 16: Run 10 fold cross validation to choose C for one class kernel SVM with linear_SVC.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'one_class_svm'
+        fea_selection_alg = 'linear_SVC'
+        kernel = 'rbf'
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select)
+
