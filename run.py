@@ -6,6 +6,7 @@ from generate_histograms import generate_histograms
 from kfold_cross_validation import kfold_cross_validation
 from select_c_for_SVM_using_kfold_CV import select_c_for_SVM_using_kfold_CV
 import os.path as path
+import os
 def run (step_number):
     if step_number == 1:
         # Step 1: Preprocess transcation data.
@@ -34,6 +35,8 @@ def run (step_number):
         split_number = 10
         train_data_joined = 'joined_train_data.csv'
         output_folder = 'train_subsets'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
         train_ratio = 0.8
         split_data_random(train_data_joined, split_number, output_folder,
                           train_ratio)
@@ -41,18 +44,24 @@ def run (step_number):
         # Step 5: Generate features histogram.
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'histograms'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
         k = 10
         kfold_cross_validation(k, train_file, ['features_histogram'], output_folder, [])
     elif step_number == 6:
         # Step 6: Run PCA.
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'pca'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
         k = 10
         kfold_cross_validation(k, train_file, ['pca'], output_folder, [])
     elif step_number == 7:
         # Step 7: Run univariate_fea_selection fearure selection.
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'univariate_fea_selection'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
         k = 10
         C = 10
         number_of_features_to_select = 7
@@ -62,6 +71,8 @@ def run (step_number):
         # Step 8: Run linear_SVC fearure selection.
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'linear_SVC'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
         k = 10
         sparsity_param = 0.0002
         C = 10
@@ -177,4 +188,3 @@ def run (step_number):
         prediction_file = 'prediction.csv'
         options = [number_of_features_to_select, C, kernel, write_prediction, prediction_file]
         classify_test_users(train_file, test_file, methods_to_run, options)
-

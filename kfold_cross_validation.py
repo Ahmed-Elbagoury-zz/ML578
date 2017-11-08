@@ -61,7 +61,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
                                                                                        labels[validation_index])
                 return error, recall, precision, specificity
 	if 'one_class_svm' in methods_to_run:
-		temp = np.array([label[0] for label in train_labels]) == 0
+		temp = np.array([label[0] for label in labels[train_index]]) == 0
 		train_data = train_data[temp, :]
 		one_class_svm_model = train_one_class_svm(train_data, options[2], nu = 1e-4, gamma = 4) #gamma = 1.0/train_data.shape[0])
 		predicted_labels = classify_one_class_svm(one_class_svm_model, validation_data)
@@ -73,6 +73,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 		print('preceptron')
 	return 0, 0, 0, 0
 
+from scipy import stats
+import scipy as sp
 def kfold_cross_validation(k, train_file, methods_to_run,
                            output_folder, options):
     train_csvfile = open(train_file,'rb')
@@ -136,4 +138,16 @@ def kfold_cross_validation(k, train_file, methods_to_run,
 	measures[1, i] = recall
 	measures[2, i] = precision
 	measures[3, i] = specificity
-    return np.mean(measures, 1), np.std(measures, 1)
+    stats_vals = []
+    alpha_val = 0.95
+    for i in range(4):
+        mean, error = mean_confidence_interval(measures[i, :], alpha_val)
+        stats_vals.append([mean, error])
+    return stats_vals
+
+def mean_confidence_interval(data, confidence=0.95):
+    a = 1.0*np.array(data)
+    n = len(a)
+    m, se = np.mean(a), sp.stats.sem(a)
+    h = se * sp.stats.t._ppf((1+confidence)/2., n-1)
+    return m, h
