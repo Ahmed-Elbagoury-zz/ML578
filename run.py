@@ -54,7 +54,7 @@ def run (step_number):
         output_folder = 'linear_svm'
         k = 10
         C = 10
-        number_of_features_to_select = 5
+        number_of_features_to_select = 7
         measures_means, measures_stds = kfold_cross_validation(k, train_file, ['univariate_fea_selection', 'linear_svm'],
                                                                output_folder, [number_of_features_to_select, C])
         print(list(measures_means))
@@ -64,7 +64,7 @@ def run (step_number):
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'linear_svm'
         k = 10
-        sparsity_param = 0.0001
+        sparsity_param = 0.0002
         C = 10
         measures_means, measures_stds = kfold_cross_validation(k, train_file, ['linear_SVC', 'linear_svm'],
                                                                output_folder, [sparsity_param, C])

@@ -67,7 +67,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
                                                                  labels[train_index], number_of_features_to_select)
             train_data = train_data[:, selected_features_indices]
             validation_data = validation_data[:, selected_features_indices]
-            selected_featuees = np.array(header)[selected_features_indices]
+            selected_featuees = np.array(header)[np.array(selected_features_indices)+2]
             for selected_feature in range(len(selected_featuees)):
                 print(selected_featuees[selected_feature])
         if 'linear_SVC' in methods_to_run:
@@ -77,7 +77,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
                                                            labels[train_index], sparsity_param)
             train_data = train_data[:, selected_features_indices]
             validation_data = validation_data[:, selected_features_indices]
-            selected_featuees = np.array(header)[selected_features_indices]
+            selected_featuees = np.array(header)[np.array(selected_features_indices)+2]
             for selected_feature in range(len(selected_featuees)):
                 print(selected_featuees[selected_feature])
         if 'linear_svm' in methods_to_run: # Run linear SVM.
