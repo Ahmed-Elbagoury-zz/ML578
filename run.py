@@ -5,6 +5,7 @@ from split_data_random import split_data_random
 from generate_histograms import generate_histograms
 from kfold_cross_validation import kfold_cross_validation
 from select_c_for_SVM_using_kfold_CV import select_c_for_SVM_using_kfold_CV
+from classify_test_users import classify_test_users
 import os.path as path
 import os
 def run (step_number):
@@ -60,24 +61,20 @@ def run (step_number):
         # Step 7: Run univariate_fea_selection fearure selection.
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'univariate_fea_selection'
-        if not path.exists(output_folder):
-            os.makedirs(output_folder)
         k = 10
         C = 10
         number_of_features_to_select = 7
-        measures_means, measures_stds = kfold_cross_validation(k, train_file, ['univariate_fea_selection'],
-                                                               output_folder, [number_of_features_to_select, C])
+        stats_vals = kfold_cross_validation(k, train_file, ['univariate_fea_selection'],
+                                            output_folder, [number_of_features_to_select, C])
     elif step_number == 8:
         # Step 8: Run linear_SVC fearure selection.
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'linear_SVC'
-        if not path.exists(output_folder):
-            os.makedirs(output_folder)
         k = 10
         sparsity_param = 0.0002
         C = 10
-        measures_means, measures_stds = kfold_cross_validation(k, train_file, ['linear_SVC'],
-                                                               output_folder, [sparsity_param, C])
+        stats_vals = kfold_cross_validation(k, train_file, ['linear_SVC'],
+                                            output_folder, [sparsity_param, C])
     elif step_number == 9:
         # Step 9: Run 10 fold cross validation to choose C for linear SVM with univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
@@ -180,11 +177,12 @@ def run (step_number):
         # Step 18: Classify Kaggle test user, using SVM with C learned form 10 fold cross validation.
         train_file = 'joined_train_data.csv'
         test_file = 'joined_test_data.csv'
+	test_file_to_get_users = 'sample_submission.csv'
         methods_to_run = ['univariate_fea_selection', 'linear_svm']
         number_of_features_to_select = 7
-        C = 10
+        C = 1000
         kernel = 'linear'
         write_prediction = 1
         prediction_file = 'prediction.csv'
         options = [number_of_features_to_select, C, kernel, write_prediction, prediction_file]
-        classify_test_users(train_file, test_file, methods_to_run, options)
+        classify_test_users(train_file, test_file, methods_to_run, test_file_to_get_users, options)

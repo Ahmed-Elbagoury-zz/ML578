@@ -38,6 +38,8 @@ def join_tables(preprocessed_transcation_file, preprocessed_user_logs_file,
             gender = 1
         else: # Missing field, skip.
             continue
+        if int(age) < 0: # Invalid age value.
+            continue
         if user_id in users_dict:
             user_data = users_dict[user_id]
             user_data.append(age)

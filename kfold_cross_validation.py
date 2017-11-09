@@ -7,23 +7,37 @@ import os.path as path
 from calculate_performance_measures import calculate_performance_measures
 from svm import *
 from fea_selection import *
+import math
 
-def write_predictions(validation_users_id, predicted_labels, options, header):
+def write_predictions(validation_users_id, predicted_labels, options, test_file_to_get_users):
     write_prediction = options[3]
     if write_prediction == 1:
+        test_csvfile = open(test_file_to_get_users,'rb')
+        lines = csv.reader(test_csvfile, delimiter = ',')
+        test_users = []
+        for line in lines:
+            test_users.append(line[0])
         prediction_filename = options[4]
         users_number = len(validation_users_id)
-        header_size = len(header)
+	validation_users_dict = {}
+	index = 0
+	for user in range(users_number):
+            user_id = validation_users_id[user]
+            validation_users_dict[''.join(user_id)] = index
+            index = index + 1
         prediction_file = open(prediction_filename, 'w')
-        for field in range(header_size):
-            prediction_file.write(header[field]+',')
-        for user in range(users_number):
-            prediction_file.write(validation_users_id[user]+','+predicted_labels[user]+'\n')
+        prediction_file.write('msno,is_churn\n')
+        for user in test_users:
+            if user in validation_users_dict:
+                normalized_prediction = 1.0/(1.0+ math.e **( -1 * predicted_labels[validation_users_dict[user]]))
+                prediction_file.write(user+','+str(normalized_prediction)+'\n')
+	    else:
+                prediction_file.write(user+',0\n')
         prediction_file.close()
 
 def run_feature_selection_and_classification(methods_to_run, train_data, validation_data, labels,
                                              train_index, validation_index, validation_users_id,
-                                             options, header):
+                                             options, header, test_file_to_get_users):
 	if 'univariate_fea_selection' in methods_to_run:
 		# Run feature selection.
 		number_of_features_to_select = options[0]
@@ -47,27 +61,27 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 	if 'linear_svm' in methods_to_run: # Run linear SVM.
 		C = options[1]
 		linear_svm_model = train_linear_svm(train_data, labels[train_index], C)
-		predicted_labels = classify(linear_svm_model, validation_data)
-		write_predictions(validation_users_id, predicted_labels, options, header)
+		predicted_labels, predicted_values = classify(linear_svm_model, validation_data)
+		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                        labels[validation_index])
                 return error, recall, precision, specificity
 	if 'kernel_svm' in methods_to_run: # Run Kernel SVM.
 		C = options[1]
 		kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C)
-		predicted_labels = classify(kernel_svm_model, validation_data)
-		write_predictions(validation_users_id, predicted_labels, options, header)
+		predicted_labels, predicted_values = classify(kernel_svm_model, validation_data)
+		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                        labels[validation_index])
                 return error, recall, precision, specificity
 	if 'one_class_svm' in methods_to_run:
 		temp = np.array([label[0] for label in labels[train_index]]) == 0
 		train_data = train_data[temp, :]
-		one_class_svm_model = train_one_class_svm(train_data, options[2], nu = 1e-4, gamma = 4) #gamma = 1.0/train_data.shape[0])
-		predicted_labels = classify_one_class_svm(one_class_svm_model, validation_data)
+		one_class_svm_model = train_one_class_svm(train_data, options[2])
+		predicted_labels, predicted_values = classify_one_class_svm(one_class_svm_model, train_data)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                        labels[validation_index])
-		write_predictions(validation_users_id, predicted_labels, options, header)    
+		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)    
                 return error, recall, precision, specificity
 	if 'preceptron' in methods_to_run: # Run multilayer preceptron.
 		print('preceptron')
@@ -133,7 +147,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
                                                                                          train_data, validation_data,
                                                                                          labels, train_index, validation_index,
                                                                                          user_ids[validation_index, :], options,
-                                                                                         header)
+                                                                                         header, '')
         measures[0, i] = error
 	measures[1, i] = recall
 	measures[2, i] = precision

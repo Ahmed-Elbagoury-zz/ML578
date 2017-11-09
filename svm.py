@@ -10,19 +10,24 @@ def train_linear_svm (data, labels, c):
 	lin_clf.fit(data, labels.ravel())
 	return lin_clf
 
-def train_one_class_svm(data, kernel, nu, gamma):
-	clf = svm.OneClassSVM(nu=nu, kernel=kernel, gamma=gamma, random_state=0)
+def train_one_class_svm(data, kernel):
+        clf = svm.OneClassSVM(kernel=kernel, random_state=0)
 	clf.fit(data)
 	return clf
 def classify_one_class_svm(clf, test_data):
-	pred = clf.predict(test_data)
+	pred_confidence = clf.predict(test_data)
 	"""
 	leave label is 1
 	stay label 0
 	"""
-	pred = [1- val for val in pred]
-	return pred
+	"""
+        predicted value
+        -1 will leave
+	1 will stay
+	"""
+	pred = [1 if val == 1 else 0 for val in pred_confidence]
+	return pred, pred_confidence
 def classify (clf, test_data):
-	pred = clf.decision_function(test_data)
-	pred = [clf.classes_[1] if val > 0 else clf.classes_[0] for val in pred]
-	return pred
+	pred_confidence = clf.decision_function(test_data)
+	pred = [clf.classes_[1] if val > 0 else clf.classes_[0] for val in pred_confidence]
+	return pred, pred_confidence
