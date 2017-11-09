@@ -6,9 +6,9 @@ import random
 import numpy as np
 def select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg,
                                     fea_selection_alg, c_vals, k,
-                                    number_of_features_to_select):
+                                    number_of_features_to_select, class_1_weight = 1):
         random.seed(0)
-        output_folder = '%s/%s/%s_%s' %(classification_alg, kernel, classification_alg, fea_selection_alg)
+        output_folder = 'class_1_weight_%d_%s/%s/%s_%s' %(class_1_weight,classification_alg, kernel, classification_alg, fea_selection_alg)
         if not path.exists(output_folder):
             os.makedirs(output_folder)
         output_file = open('%s/stats.txt' %(output_folder), 'a')
