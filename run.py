@@ -71,7 +71,7 @@ def run (step_number):
         train_file = path.join('train_subsets', '0_train.csv')
         output_folder = 'linear_SVC'
         k = 10
-        sparsity_param = 0.0002
+        sparsity_param = 0.002
         C = 10
         stats_vals = kfold_cross_validation(k, train_file, ['linear_SVC'],
                                             output_folder, [sparsity_param, C])
@@ -90,13 +90,13 @@ def run (step_number):
         # Step 10: Run 10 fold cross validation to choose C for linear SVM with linear_SVC.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
-        number_of_features_to_select = 7
+        sparsity_param = 0.002
         c_vals = [1, 10, 25, 40, 55, 70, 85]
         classification_alg = 'linear_svm'
         fea_selection_alg = 'linear_SVC'
         kernel = 'linear'
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, number_of_features_to_select)
+                                        c_vals, k, sparsity_param)
     elif step_number == 11:
         # Step 11: Run 10 fold cross validation to choose C for kernel SVM with univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
@@ -112,13 +112,13 @@ def run (step_number):
         # Step 12: Run 10 fold cross validation to choose C for kernel SVM with linear_SVC.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
-        number_of_features_to_select = 7
+        sparsity_param = 0.002
         c_vals = [1, 10, 25, 40, 55, 70, 85]
         classification_alg = 'kernel_svm'
         fea_selection_alg = 'linear_SVC'
         kernel = 'rbf'
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, number_of_features_to_select)
+                                        c_vals, k, sparsity_param)
     elif step_number == 13:
         # Step 13: Run 10 fold cross validation to choose C for one class linear SVM with univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
@@ -134,13 +134,13 @@ def run (step_number):
         # Step 14: Run 10 fold cross validation to choose C for one class linear SVM with linear_SVC.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
-        number_of_features_to_select = 7
+        sparsity_param = 0.002
         c_vals = [1, 10, 25, 40, 55, 70, 85]
         classification_alg = 'one_class_svm'
         fea_selection_alg = 'linear_SVC'
         kernel = 'linear'
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, number_of_features_to_select)
+                                        c_vals, k, sparsity_param)
     elif step_number == 15:
         # Step 15: Run 10 fold cross validation to choose C for one class kernel SVM with univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
@@ -156,13 +156,13 @@ def run (step_number):
         # Step 16: Run 10 fold cross validation to choose C for one class kernel SVM with linear_SVC.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
-        number_of_features_to_select = 7
+        sparsity_param = 0.002
         c_vals = [1, 10, 25, 40, 55, 70, 85]
         classification_alg = 'one_class_svm'
         fea_selection_alg = 'linear_SVC'
         kernel = 'rbf'
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, number_of_features_to_select)
+                                        c_vals, k, sparsity_param)
     elif step_number == 17:
         # Step 17: For submitting on Kaggle, join the Kaggle test data with the other tables.
         transcations_output_filename = 'transactions_preprocessed.csv'
@@ -177,7 +177,7 @@ def run (step_number):
         # Step 18: Classify Kaggle test user, using SVM with C learned form 10 fold cross validation.
         train_file = 'joined_train_data.csv'
         test_file = 'joined_test_data.csv'
-	test_file_to_get_users = 'sample_submission.csv'
+        test_file_to_get_users = 'sample_submission.csv'
         methods_to_run = ['univariate_fea_selection', 'linear_svm']
         number_of_features_to_select = 7
         C = 1000
