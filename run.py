@@ -210,3 +210,28 @@ def run (step_number):
         class_1_weight = 10
         select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
                                         c_vals, k, sparsity_param, class_1_weight)
+
+    elif step_number == 21:
+        # Step 11: Run 10 fold cross validation to choose C for kernel SVM with univariate_fea_selection.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        number_of_features_to_select = 7
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'kernel_svm'
+        fea_selection_alg = 'univariate_fea_selection'
+        kernel = 'rbf'
+        class_1_weight = 10
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, number_of_features_to_select, class_1_weight)
+    elif step_number == 22:
+        # Step 12: Run 10 fold cross validation to choose C for kernel SVM with linear_SVC.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        sparsity_param = 0.002
+        c_vals = [1, 10, 25, 40, 55, 70, 85]
+        classification_alg = 'kernel_svm'
+        fea_selection_alg = 'linear_SVC'
+        kernel = 'rbf'
+        class_1_weight = 10
+        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
+                                        c_vals, k, sparsity_param, class_1_weight)
