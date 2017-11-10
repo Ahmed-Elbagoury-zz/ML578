@@ -46,8 +46,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 		train_data = train_data[:, selected_features_indices]
 		validation_data = validation_data[:, selected_features_indices]
 		selected_featuees = np.array(header)[np.array(selected_features_indices)+2]
-		# for selected_feature in range(len(selected_featuees)):
-		# 	print(selected_featuees[selected_feature])
+		for selected_feature in range(len(selected_featuees)):
+			print(selected_featuees[selected_feature])
 	if 'linear_SVC' in methods_to_run:
 		# Run feature selection.
 		sparsity_param = options[0]
@@ -56,8 +56,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 		train_data = train_data[:, selected_features_indices]
 		validation_data = validation_data[:, selected_features_indices]
 		selected_featuees = np.array(header)[np.array(selected_features_indices)+2]
-		# for selected_feature in range(len(selected_featuees)):
-		# 	print(selected_featuees[selected_feature])
+		for selected_feature in range(len(selected_featuees)):
+			print(selected_featuees[selected_feature])
 	if 'linear_svm' in methods_to_run: # Run linear SVM.
 		C = options[1]
 		linear_svm_model = train_linear_svm(train_data, labels[train_index], C, class_1_weight)
