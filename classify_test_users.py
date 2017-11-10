@@ -22,6 +22,18 @@ def classify_test_users(train_file, test_file, methods_to_run, test_file_to_get_
     test_size = len(test_labels)
     train_index = range(train_size)
     test_index = range(train_size, (train_size + test_size))
-    run_feature_selection_and_classification(methods_to_run, train_data, test_data, labels,
+    error, recall, precision, specificity = run_feature_selection_and_classification(methods_to_run, train_data, test_data, labels,
                                              train_index, test_index, test_user_ids,
                                              options, test_header, test_file_to_get_users)
+    print 'Error: %0.3f, Recall: %0.3f\nPrecision: %0.3f, Specificity: %0.5f' %(error, recall, precision, specificity)
+if __name__ == '__main__':
+    train_file = 'train_subsets/0_train.csv'
+    test_file = 'test_subsets/0_test.csv'
+    methods_to_run = ['univariate_fea_selection', 'linear_svm']
+    number_of_features_to_select = 7
+    C = 10
+    kernel = 'linear'
+    write_prediction = 0
+    prediction_file = ''
+    options = [number_of_features_to_select, C, kernel, write_prediction, prediction_file]
+    classify_test_users(train_file, test_file, methods_to_run, '', options)
