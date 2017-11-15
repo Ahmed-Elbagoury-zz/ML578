@@ -32,4 +32,4 @@ def select_parameters_for_MLP_using_kfold_CV(train_file, kernel, classification_
                 output_file.write('%f\t%f\t' %(stat_record[0], stat_record[1]))
             output_file.write('\n')
             output_file.close()
-        plot_cross_validation_SVM(k, c_vals, labels, np.array(mean_vals), np.array(error_vals), '%s/stats' %(output_folder), range(len(mean_vals)), False)
+        plot_cross_validation_SVM(k, parameter_list, labels, np.array(mean_vals), np.array(error_vals), '%s/stats' %(output_folder), range(len(mean_vals)), False)

@@ -189,7 +189,7 @@ def run (step_number):
         options = [number_of_features_to_select, C, kernel, write_prediction, prediction_file]
         classify_test_users(train_file, test_file, methods_to_run, test_file_to_get_users, options)
     elif step_number == 19:
-        # Step 19: 10 fold CV for MLP.
+        # Step 19: 10 fold CV for MLP using univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
         number_of_features_to_select = 7
@@ -203,7 +203,21 @@ def run (step_number):
                                                  fea_selection_alg, params_list, k,
                                                  number_of_features_to_select)
     elif step_number == 20:
-        # Step 20: Test different number of samples for different classification algorithms.
+        # Step 20: 10 fold CV for MLP using linear_SVC.
+        train_file = path.join('train_subsets', '0_train.csv')
+        k = 10
+        sparsity_param = 0.002
+        params_list = [(10,10,10), (10,10,10,10,10), (10,10,10,10,10,10,10,10,10,10),
+                       (50,50,50), (50,50,50,50,50), (50,50,50,50,50,50,50,50,50,50),
+                       (100,100,100), (100,100,100,100,100), (100,100,100,100,100,100,100,100,100,100)]
+        classification_alg = 'preceptron'
+        fea_selection_alg = 'linear_SVC'
+        kernel = ''
+        select_parameters_for_MLP_using_kfold_CV(train_file, kernel, classification_alg,
+                                                 fea_selection_alg, params_list, k,
+                                                 sparsity_param)
+    elif step_number == 21:
+        # Step 21: Test different number of samples for different classification algorithms.
         # Parameters are selected based on CV best in precision and recall.
         train_file = path.join('train_subsets', '0_train.csv')
         test_file = path.join('train_subsets', '0_test.csv')
@@ -224,8 +238,8 @@ def run (step_number):
             os.makedirs(output_folder)
         test_different_number_of_samples(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list,
                                      different_number_of_samples, output_folder)
-    elif step_number == 21:
-        # Step 21: Test different number of samples for different classification algorithms.
+    elif step_number == 22:
+        # Step 22: Test different number of samples for different classification algorithms.
         # Parameters are selected based on CV best in specificty.
         train_file = path.join('train_subsets', '0_train.csv')
         test_file = path.join('train_subsets', '0_test.csv')
