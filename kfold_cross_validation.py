@@ -4,10 +4,14 @@ from my_PCA import MyPCA
 import numpy as np
 from matplotlib import pyplot
 import os.path as path
+from sklearn.naive_bayes import GaussianNB
 from calculate_performance_measures import calculate_performance_measures
+from sklearn import mixture
 from svm import *
 from fea_selection import *
 import math
+from sklearn.neural_network import MLPClassifier
+
 
 def write_predictions(validation_users_id, predicted_labels, options, test_file_to_get_users):
     write_prediction = options[3]
@@ -19,9 +23,9 @@ def write_predictions(validation_users_id, predicted_labels, options, test_file_
             test_users.append(line[0])
         prediction_filename = options[4]
         users_number = len(validation_users_id)
-	validation_users_dict = {}
-	index = 0
-	for user in range(users_number):
+        validation_users_dict = {}
+        index = 0
+        for user in range(users_number):
             user_id = validation_users_id[user]
             validation_users_dict[''.join(user_id)] = index
             index = index + 1
@@ -29,15 +33,15 @@ def write_predictions(validation_users_id, predicted_labels, options, test_file_
         prediction_file.write('msno,is_churn\n')
         for user in test_users:
             if user in validation_users_dict:
-                normalized_prediction = 1.0/(1.0+ math.e **( -1 * predicted_labels[validation_users_dict[user]]))
-                prediction_file.write(user+','+str(normalized_prediction)+'\n')
+                #normalized_prediction = 1.0/(1.0+ math.e **( -1 * predicted_labels[validation_users_dict[user]]))
+                prediction_file.write(user+','+str(predicted_labels[validation_users_dict[user]][1])+'\n')
 	    else:
-                prediction_file.write(user+',0\n')
+                prediction_file.write(user+',0.03\n')
         prediction_file.close()
 
 def run_feature_selection_and_classification(methods_to_run, train_data, validation_data, labels,
                                              train_index, validation_index, validation_users_id,
-                                             options, header, test_file_to_get_users, class_1_weight = 1):
+                                             options, header, test_file_to_get_users):
 	if 'univariate_fea_selection' in methods_to_run:
 		# Run feature selection.
 		number_of_features_to_select = options[0]
@@ -60,7 +64,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 			print(selected_featuees[selected_feature])
 	if 'linear_svm' in methods_to_run: # Run linear SVM.
 		C = options[1]
-		linear_svm_model = train_linear_svm(train_data, labels[train_index], C, class_1_weight)
+		linear_svm_model = train_linear_svm(train_data, labels[train_index], C)
 		predicted_labels, predicted_values = classify(linear_svm_model, validation_data)
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
@@ -68,7 +72,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
                 return error, recall, precision, specificity
 	if 'kernel_svm' in methods_to_run: # Run Kernel SVM.
 		C = options[1]
-		kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C, class_1_weight)
+		kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C)
 		predicted_labels, predicted_values = classify(kernel_svm_model, validation_data)
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
@@ -84,12 +88,39 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)    
                 return error, recall, precision, specificity
 	if 'preceptron' in methods_to_run: # Run multilayer preceptron.
-		print('preceptron')
+		clf = MLPClassifier(hidden_layer_sizes = options[1], verbose=True)
+		clf.fit(train_data, labels[train_index])
+		predicted_labels = clf.predict(validation_data)
+		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                       labels[validation_index])
+                predicted_values = clf.predict_proba(validation_data)
+                write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
+                return error, recall, precision, specificity 
+	if 'naive_bayes' in methods_to_run:
+                clf = GaussianNB()
+                clf.fit(train_data, labels[train_index])
+                predicted_labels = clf.predict(validation_data)
+                error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                       labels[validation_index])
+                predicted_values = clf.predict_proba(validation_data)
+                write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
+                return error, recall, precision, specificity
+        if 'guassian' in methods_to_run:
+                clf = mixture.GaussianMixture(n_components=2,
+                                              covariance_type='full')
+                clf.fit(train_data, labels[train_index])
+                predicted_labels = clf.predict(validation_data)
+                error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                       labels[validation_index])
+                predicted_values = clf.predict_proba(validation_data)
+                write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
+                return error, recall, precision, specificity
 	return 0, 0, 0, 0
 
 from scipy import stats
 import scipy as sp
-def kfold_cross_validation(k, train_file, methods_to_run, output_folder, options, class_1_weight = 1):
+def kfold_cross_validation(k, train_file, methods_to_run,
+                           output_folder, options):
     train_csvfile = open(train_file,'rb')
     lines = csv.reader(train_csvfile, delimiter = ',')
     lines = list(lines)
@@ -146,7 +177,7 @@ def kfold_cross_validation(k, train_file, methods_to_run, output_folder, options
                                                                                          train_data, validation_data,
                                                                                          labels, train_index, validation_index,
                                                                                          user_ids[validation_index, :], options,
-                                                                                         header, '', class_1_weight )
+                                                                                         header, '')
         measures[0, i] = error
 	measures[1, i] = recall
 	measures[2, i] = precision

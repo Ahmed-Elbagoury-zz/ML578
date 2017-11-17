@@ -6,6 +6,8 @@ from generate_histograms import generate_histograms
 from kfold_cross_validation import kfold_cross_validation
 from select_c_for_SVM_using_kfold_CV import select_c_for_SVM_using_kfold_CV
 from classify_test_users import classify_test_users
+from classify_test_users import test_different_number_of_samples
+from select_parameters_for_MLP_using_kfold_CV import select_parameters_for_MLP_using_kfold_CV
 import os.path as path
 import os
 def run (step_number):
@@ -178,60 +180,83 @@ def run (step_number):
         train_file = 'joined_train_data.csv'
         test_file = 'joined_test_data.csv'
         test_file_to_get_users = 'sample_submission.csv'
-        methods_to_run = ['univariate_fea_selection', 'linear_svm']
-        number_of_features_to_select = 7
-        C = 1000
+        methods_to_run = ['univariate_fea_selection', 'preceptron']
+        number_of_features_to_select = 14
+        C = 10
         kernel = 'linear'
         write_prediction = 1
-        prediction_file = 'prediction.csv'
+        prediction_file = 'prediction_naive_MLP_all_10_200.csv'
         options = [number_of_features_to_select, C, kernel, write_prediction, prediction_file]
         classify_test_users(train_file, test_file, methods_to_run, test_file_to_get_users, options)
     elif step_number == 19:
-        # Step 9: Run 10 fold cross validation to choose C for linear SVM with univariate_fea_selection.
+        # Step 19: 10 fold CV for MLP using univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
         number_of_features_to_select = 7
-        c_vals = [1, 10, 25, 40, 55, 70, 85]
-        classification_alg = 'linear_svm'
+        params_list = [(10,10,10), (10,10,10,10,10), (10,10,10,10,10,10,10,10,10,10),
+                       (50,50,50), (50,50,50,50,50), (50,50,50,50,50,50,50,50,50,50),
+                       (100,100,100), (100,100,100,100,100), (100,100,100,100,100,100,100,100,100,100)]
+        classification_alg = 'preceptron'
         fea_selection_alg = 'univariate_fea_selection'
-        kernel = 'linear'
-        class_1_weight = 10
-        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, number_of_features_to_select, class_1_weight)
+        kernel = ''
+        select_parameters_for_MLP_using_kfold_CV(train_file, kernel, classification_alg,
+                                                 fea_selection_alg, params_list, k,
+                                                 number_of_features_to_select)
     elif step_number == 20:
-        # Step 10: Run 10 fold cross validation to choose C for linear SVM with linear_SVC.
+        # Step 20: 10 fold CV for MLP using linear_SVC.
         train_file = path.join('train_subsets', '0_train.csv')
         k = 10
         sparsity_param = 0.002
-        c_vals = [1, 10, 25, 40, 55, 70, 85]
-        classification_alg = 'linear_svm'
+        params_list = [(10,10,10), (10,10,10,10,10), (10,10,10,10,10,10,10,10,10,10),
+                       (50,50,50), (50,50,50,50,50), (50,50,50,50,50,50,50,50,50,50),
+                       (100,100,100), (100,100,100,100,100), (100,100,100,100,100,100,100,100,100,100)]
+        classification_alg = 'preceptron'
         fea_selection_alg = 'linear_SVC'
-        kernel = 'linear'
-        class_1_weight = 10
-        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, sparsity_param, class_1_weight)
-
+        kernel = ''
+        select_parameters_for_MLP_using_kfold_CV(train_file, kernel, classification_alg,
+                                                 fea_selection_alg, params_list, k,
+                                                 sparsity_param)
     elif step_number == 21:
-        # Step 11: Run 10 fold cross validation to choose C for kernel SVM with univariate_fea_selection.
+        # Step 21: Test different number of samples for different classification algorithms.
+        # Parameters are selected based on CV best in precision and recall.
         train_file = path.join('train_subsets', '0_train.csv')
-        k = 10
+        test_file = path.join('train_subsets', '0_test.csv')
+        test_file_to_get_users = 'sample_submission.csv'
+        methods_to_run_list = [['univariate_fea_selection', 'linear_svm'], ['univariate_fea_selection', 'kernel_svm'],
+                               ['univariate_fea_selection', 'naive_bayes'], ['univariate_fea_selection', 'preceptron']]
+        write_prediction = 0
+        prediction_file = ''
         number_of_features_to_select = 7
-        c_vals = [1, 10, 25, 40, 55, 70, 85]
-        classification_alg = 'kernel_svm'
-        fea_selection_alg = 'univariate_fea_selection'
-        kernel = 'rbf'
-        class_1_weight = 10
-        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, number_of_features_to_select, class_1_weight)
+        linear_SVM_options = [number_of_features_to_select, 1, 'linear', write_prediction, prediction_file]
+        kernel_SVM_options = [number_of_features_to_select, 1, 'rbf', write_prediction, prediction_file]
+        naive_bayes_options = [number_of_features_to_select, 0, '', write_prediction, prediction_file]
+        preceptron_options = [number_of_features_to_select, (10, 10, 10), '', write_prediction, prediction_file]
+        options_list = [linear_SVM_options, kernel_SVM_options, naive_bayes_options, preceptron_options]
+        different_number_of_samples = range(2000, 22000, 2000)
+        output_folder = 'different_number_of_samples_experiment'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
+        test_different_number_of_samples(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list,
+                                     different_number_of_samples, output_folder)
     elif step_number == 22:
-        # Step 12: Run 10 fold cross validation to choose C for kernel SVM with linear_SVC.
+        # Step 22: Test different number of samples for different classification algorithms.
+        # Parameters are selected based on CV best in specificty.
         train_file = path.join('train_subsets', '0_train.csv')
-        k = 10
-        sparsity_param = 0.002
-        c_vals = [1, 10, 25, 40, 55, 70, 85]
-        classification_alg = 'kernel_svm'
-        fea_selection_alg = 'linear_SVC'
-        kernel = 'rbf'
-        class_1_weight = 10
-        select_c_for_SVM_using_kfold_CV(train_file, kernel, classification_alg, fea_selection_alg,
-                                        c_vals, k, sparsity_param, class_1_weight)
+        test_file = path.join('train_subsets', '0_test.csv')
+        test_file_to_get_users = 'sample_submission.csv'
+        methods_to_run_list = [['univariate_fea_selection', 'linear_svm'], ['univariate_fea_selection', 'kernel_svm'],
+                               ['univariate_fea_selection', 'naive_bayes'], ['univariate_fea_selection', 'preceptron']]
+        write_prediction = 0
+        prediction_file = ''
+        number_of_features_to_select = 7
+        linear_SVM_options = [number_of_features_to_select, 10, 'linear', write_prediction, prediction_file]
+        kernel_SVM_options = [number_of_features_to_select, 85, 'rbf', write_prediction, prediction_file]
+        naive_bayes_options = [number_of_features_to_select, 0, '', write_prediction, prediction_file]
+        preceptron_options = [number_of_features_to_select, (10, 10, 10), '', write_prediction, prediction_file]
+        options_list = [linear_SVM_options, kernel_SVM_options, naive_bayes_options, preceptron_options]
+        different_number_of_samples = range(2000, 22000, 2000)
+        output_folder = 'different_number_of_samples_experiment'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
+        test_different_number_of_samples(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list,
+                                     different_number_of_samples, output_folder)
