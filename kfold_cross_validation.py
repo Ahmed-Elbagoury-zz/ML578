@@ -41,7 +41,8 @@ def write_predictions(validation_users_id, predicted_labels, options, test_file_
 
 def run_feature_selection_and_classification(methods_to_run, train_data, validation_data, labels,
                                              train_index, validation_index, validation_users_id,
-                                             options, header, test_file_to_get_users):
+                                             options, header, test_file_to_get_users,
+                                             class_1_weight = 1):
 	if 'univariate_fea_selection' in methods_to_run:
 		# Run feature selection.
 		number_of_features_to_select = options[0]
@@ -64,7 +65,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 			print(selected_featuees[selected_feature])
 	if 'linear_svm' in methods_to_run: # Run linear SVM.
 		C = options[1]
-		linear_svm_model = train_linear_svm(train_data, labels[train_index], C)
+		linear_svm_model = train_linear_svm(train_data, labels[train_index], C, class_1_weight)
 		predicted_labels, predicted_values = classify(linear_svm_model, validation_data)
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
@@ -72,7 +73,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
                 return error, recall, precision, specificity
 	if 'kernel_svm' in methods_to_run: # Run Kernel SVM.
 		C = options[1]
-		kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C)
+		kernel_svm_model = train_kernel_svm(train_data, labels[train_index], C, class_1_weight)
 		predicted_labels, predicted_values = classify(kernel_svm_model, validation_data)
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
@@ -120,7 +121,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 from scipy import stats
 import scipy as sp
 def kfold_cross_validation(k, train_file, methods_to_run,
-                           output_folder, options):
+                           output_folder, options, class_1_weight = 1):
     train_csvfile = open(train_file,'rb')
     lines = csv.reader(train_csvfile, delimiter = ',')
     lines = list(lines)
@@ -177,7 +178,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
                                                                                          train_data, validation_data,
                                                                                          labels, train_index, validation_index,
                                                                                          user_ids[validation_index, :], options,
-                                                                                         header, '')
+                                                                                         header, '', class_1_weight)
         measures[0, i] = error
 	measures[1, i] = recall
 	measures[2, i] = precision
