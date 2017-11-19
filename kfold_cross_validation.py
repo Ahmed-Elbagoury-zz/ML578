@@ -79,6 +79,15 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                        labels[validation_index])
                 return error, recall, precision, specificity
+        if 'poly_svm' in methods_to_run:
+		C = options[1]
+		degree = options[2]
+                kernel_svm_model = train_poly_kernel_svm (data, degree, labels, c, class_1_weight = 1):
+		predicted_labels, predicted_values = classify(kernel_svm_model, validation_data)
+		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
+		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
+                                                                                       labels[validation_index])
+                return error, recall, precision, specificity
 	if 'one_class_svm' in methods_to_run:
 		temp = np.array([label[0] for label in labels[train_index]]) == 0
 		train_data = train_data[temp, :]

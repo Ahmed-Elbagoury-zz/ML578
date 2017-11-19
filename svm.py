@@ -5,6 +5,12 @@ def train_kernel_svm (data, labels, c, class_1_weight = 1):
 	clf.fit(data, labels.ravel())
 	return clf
 
+def train_poly_kernel_svm (data, degree, labels, c, class_1_weight = 1):
+	clf = svm.SVC(C = c, kernel = 'poly', degree = degree,
+                      class_weight = {1: class_1_weight}, random_state=0)
+	clf.fit(data, labels.ravel())
+	return clf
+
 def train_linear_svm (data, labels, c, class_1_weight = 1):
 	lin_clf = svm.LinearSVC(C = c, class_weight = {1: class_1_weight}, random_state=0)
 	lin_clf.fit(data, labels.ravel())

@@ -145,6 +145,79 @@ def test_different_subsets(train_folder, test_file, methods_to_run_list, test_fi
             pyplot.savefig(path.join(output_folder, 'different_subsets_'+options[2]+'_'+methods_to_run[1]+'_with_class_weights.png'))            
     pyplot.close()
 
+def generate_train_test_error_for_different_kernels(train_file, test_file, output_folder):
+    methods_to_run_list
+    train_data, train_header, train_labels, train_user_ids = get_data(train_file)
+    test_data, test_header, test_labels, test_user_ids = get_data(test_file)
+    test_labels = np.concatenate((train_labels, test_labels))
+    train_labels = np.concatenate((train_labels, train_labels))
+    train_size = len(train_labels)
+    test_size = len(test_labels)
+    train_index = range(train_size)
+    test_index = range(train_size, (train_size + test_size))
+    train_test_index = range(train_size, (train_size + train_size))
+    # Run linear SVM.
+    train_error_1inear = run_feature_selection_and_classification(['univariate_fea_selection', 'linear_svm'],
+                                                                  train_data, train_data, train_labels, train_index,
+                                                                  train_index, train_user_ids,
+                                                                  [7, 10, 'linear', 0, ''], train_header, '')[0]
+    test_error_linear = run_feature_selection_and_classification(['univariate_fea_selection', 'linear_svm'],
+                                                                 train_data, test_data, test_labels, train_index,
+                                                                 test_index, test_user_ids, [7, 10, 'linear', 0, ''],
+                                                                 test_header, '')[0]
+
+    # Run poly SVM with degree 2.
+    train_error_poly_2 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
+                                                                  train_data, train_data, train_labels, train_index,
+                                                                  train_index, train_user_ids,
+                                                                  [7, 10, 2, 0, ''], train_header, '')[0]
+    test_error_poly_2 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
+                                                                 train_data, test_data, test_labels, train_index,
+                                                                 test_index, test_user_ids, [7, 10, 2, 0, ''],
+                                                                 test_header, '')[0]
+    # Run poly SVM with degree 3.
+    train_error_poly_3 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
+                                                                  train_data, train_data, train_labels, train_index,
+                                                                  train_index, train_user_ids,
+                                                                  [7, 10, 3, 0, ''], train_header, '')[0]
+    test_error_poly_3 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
+                                                                 train_data, test_data, test_labels, train_index,
+                                                                 test_index, test_user_ids, [7, 10, 3, 0, ''],
+                                                                 test_header, '')[0]
+    # Run poly SVM with degree 4.
+    train_error_poly_4 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
+                                                                  train_data, train_data, train_labels, train_index,
+                                                                  train_index, train_user_ids,
+                                                                  [7, 10, 4, 0, ''], train_header, '')[0]
+    test_error_poly_4 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
+                                                                 train_data, test_data, test_labels, train_index,
+                                                                 test_index, test_user_ids, [7, 10, 4, 0, ''],
+                                                                 test_header, '')[0]
+    # Run RBF Kernel SVM.
+    train_error_rbf_kernel = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
+                                                                      train_data, train_data, train_labels, train_index,
+                                                                      train_index, train_user_ids,
+                                                                      [7, 10, 'rbf', 0, ''], train_header, '')[0]
+    test_error_rbf_kernel = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
+                                                                     train_data, test_data, test_labels, train_index,
+                                                                     test_index, test_user_ids, [7, 10, 'rbf', 0, ''],
+                                                                     test_header, '')[0]
+    pyplot.figure()
+    pyplot.ylim((-0.01, 1.1))
+    pyplot.xlabel('Different Kernels')
+    index = [1, 2, 3, 4, 5]
+    pyplot.xticks(index, ['Linear SVM', 'Poly SVM Degree 2', 'Poly SVM Degree 3',
+                          'Poly SVM Degree 4', 'RBF SVM'], rotation = 'vertical')
+    pyplot.plot(index, [train_error_1inear, train_error_poly_2, train_error_poly_3,
+                        train_error_poly_4, train_error_rbf_kernel], color = 'r')
+    pyplot.plot(index, [test_error_1inear, test_error_poly_2, test_error_poly_3,
+                        test_error_poly_4, test_error_rbf_kernel], color = 'b')
+    pyplot.legend(['Training Error', 'Testing Error'])
+    pyplot.savefig(path.join(output_folder, 'SVM_with_different_kernels.png'))            
+    pyplot.close()
+
+    
+  
 
 if __name__ == '__main__':
     train_file = 'train_subsets/0_train.csv'
