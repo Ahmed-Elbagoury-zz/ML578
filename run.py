@@ -7,6 +7,7 @@ from kfold_cross_validation import kfold_cross_validation
 from select_c_for_SVM_using_kfold_CV import select_c_for_SVM_using_kfold_CV
 from classify_test_users import classify_test_users
 from classify_test_users import test_different_number_of_samples
+from classify_test_users import test_different_thresholds
 from select_parameters_for_MLP_using_kfold_CV import select_parameters_for_MLP_using_kfold_CV
 from select_feature_selection_Naive_Bayes_using_kfold_CV import select_feature_selection_Naive_Bayes_using_kfold_CV
 from classify_test_users import test_different_subsets
@@ -348,3 +349,38 @@ def run (step_number):
         train_files_count = 10
         test_different_subsets(train_folder, test_file, methods_to_run_list, test_file_to_get_users,
                                options_list, output_folder, train_files_count)
+    elif step_number == 29:
+        # Step 29: Test different thresholds and plot the ROC curve for different classification algorithms.
+        # Parameters and feature selection methods are selected based on CV best in specificty.
+        threshold_list = [0.25, 0.5, 0.75, 1]
+        train_file = path.join('train_subsets', '0_train.csv')
+        test_file = path.join('train_subsets', '0_test.csv')
+        test_file_to_get_users = 'sample_submission.csv'
+        methods_to_run_list = [['univariate_fea_selection', 'linear_svm'], ['linear_SVC', 'kernel_svm'],
+                               ['linear_SVC', 'one_class_svm'], ['linear_SVC', 'one_class_svm'],
+                               ['linear_SVC', 'linear_svm'],['univariate_fea_selection', 'kernel_svm'],
+                               ['univariate_fea_selection', 'naive_bayes'], ['linear_SVC', 'preceptron']]
+        write_prediction = 0
+        prediction_file = ''
+        number_of_features_to_select = 7
+        sparsity_param = 0.002
+        linear_SVM_options = [number_of_features_to_select, 10, 'linear', write_prediction, prediction_file]
+        kernel_SVM_options = [sparsity_param, 85, 'rbf', write_prediction, prediction_file]
+        one_class_linear_SVM_options = [sparsity_param, 1, 'linear', write_prediction, prediction_file]
+        one_class_kernel_SVM_options = [sparsity_param, 85, 'rbf', write_prediction, prediction_file]
+        class_weight_linear_SVM_options = [sparsity_param, 25, 'linear', write_prediction, prediction_file, 10]
+        class_weight_kernel_SVM_options = [number_of_features_to_select, 1, 'rbf', write_prediction, prediction_file, 10]
+        naive_bayes_options = [number_of_features_to_select, 0, '', write_prediction, prediction_file]
+        preceptron_options = [sparsity_param, (100, 100, 100, 100, 100, 100, 100, 100, 100, 100), '', write_prediction, prediction_file]
+        options_list = [linear_SVM_options, kernel_SVM_options, one_class_linear_SVM_options, one_class_kernel_SVM_options,
+                        class_weight_linear_SVM_options, class_weight_kernel_SVM_options, naive_bayes_options,
+                        preceptron_options]
+        different_number_of_samples = range(2000, 22000, 2000)
+        output_folder = 'different_thresholds_experiment'
+        if not path.exists(output_folder):
+            os.makedirs(output_folder)
+        test_different_thresholds(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list, threshold_list, output_folder, class_1_weight = 1)
+
+
+if __name__ == '__main__':
+    run(29)

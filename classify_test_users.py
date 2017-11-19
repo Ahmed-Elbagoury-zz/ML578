@@ -30,6 +30,31 @@ def classify_test_users(train_file, test_file, methods_to_run, test_file_to_get_
                                              options, test_header, test_file_to_get_users, class_1_weight)
     print 'Error: %0.3f, Recall: %0.3f\nPrecision: %0.3f, Specificity: %0.7f' %(error, recall, precision, specificity)
 
+def test_different_thresholds(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list, threshold_list, output_folder, class_1_weight = 1):
+    train_data, train_header, train_labels, train_user_ids = get_data(train_file)
+    test_data, test_header, test_labels, test_user_ids = get_data(test_file)
+    train_size = len(train_labels)
+    test_size = len(test_labels)
+    train_index = range(train_size)
+    test_index = range(train_size, train_size + test_size)
+    labels = np.concatenate((train_labels, test_labels))
+    option_index = 0
+    for method_to_run in methods_to_run_list:
+        print(method_to_run)
+        options = options_list[option_index]
+        option_index = option_index + 1
+        precisions = np.zeros(len(threshold_list))
+        recalls = np.zeros(len(threshold_list))
+        specificities = np.zeros(len(threshold_list))
+        index = 0
+        if len(options) < 6:
+          error, recall, precision, specificity = run_feature_selection_and_classification(method_to_run, train_data, test_data, labels, train_index, test_index, test_user_ids, options, test_header, test_file_to_get_users, threshold_list = threshold_list)
+        else:
+          error, recall, precision, specificity = run_feature_selection_and_classification(method_to_run, train_data_subset, test_data, labels, train_index, test_index, test_user_ids, options, test_header, test_file_to_get_users, options[5], threshold_list = threshold_list)
+          precisions[index] = precision
+          recalls[index] = recall
+          specificities[index] = specificity
+          index = index + 1
 def test_different_number_of_samples(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list,
                                      different_number_of_samples, output_folder):
     train_data, train_header, train_labels, train_user_ids = get_data(train_file)
