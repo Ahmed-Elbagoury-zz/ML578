@@ -67,6 +67,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
 		C = options[1]
 		linear_svm_model = train_linear_svm(train_data, labels[train_index], C, class_1_weight)
 		predicted_labels, predicted_values = classify(linear_svm_model, validation_data)
+		print('predicted_labels = '+str(len(predicted_labels)))
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
                                                                                        labels[validation_index])
@@ -82,7 +83,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
         if 'poly_svm' in methods_to_run:
 		C = options[1]
 		degree = options[2]
-                kernel_svm_model = train_poly_kernel_svm (data, degree, labels, c, class_1_weight = 1):
+                kernel_svm_model = train_poly_kernel_svm (data, degree, labels, c, class_1_weight = 1)
 		predicted_labels, predicted_values = classify(kernel_svm_model, validation_data)
 		write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
 		error, recall, precision, specificity = calculate_performance_measures(predicted_labels,
