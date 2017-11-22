@@ -27,9 +27,34 @@ def classify_test_users(train_file, test_file, methods_to_run, test_file_to_get_
     test_index = range(train_size, (train_size + test_size))
     error, recall, precision, specificity = run_feature_selection_and_classification(methods_to_run, train_data, test_data, labels,
                                              train_index, test_index, test_user_ids,
-                                             options, test_header, test_file_to_get_users, class_1_weight)
+                                             options, test_header, test_file_to_get_users, class_1_weight = class_1_weight)
     print 'Error: %0.3f, Recall: %0.3f\nPrecision: %0.3f, Specificity: %0.7f' %(error, recall, precision, specificity)
 
+def test_different_thresholds(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list, threshold_list, output_folder, class_1_weight = 1):
+    train_data, train_header, train_labels, train_user_ids = get_data(train_file)
+    test_data, test_header, test_labels, test_user_ids = get_data(test_file)
+    train_size = len(train_labels)
+    test_size = len(test_labels)
+    train_index = range(train_size)
+    test_index = range(train_size, train_size + test_size)
+    labels = np.concatenate((train_labels, test_labels))
+    option_index = 0
+    for method_to_run in methods_to_run_list:
+        print(method_to_run)
+        options = options_list[option_index]
+        option_index = option_index + 1
+        precisions = np.zeros(len(threshold_list))
+        recalls = np.zeros(len(threshold_list))
+        specificities = np.zeros(len(threshold_list))
+        index = 0
+        if len(options) < 6:
+          error, recall, precision, specificity = run_feature_selection_and_classification(method_to_run, train_data, test_data, labels, train_index, test_index, test_user_ids, options, test_header, test_file_to_get_users, threshold_list = threshold_list)
+        else:
+          error, recall, precision, specificity = run_feature_selection_and_classification(method_to_run, train_data_subset, test_data, labels, train_index, test_index, test_user_ids, options, test_header, test_file_to_get_users, options[5], threshold_list = threshold_list)
+          precisions[index] = precision
+          recalls[index] = recall
+          specificities[index] = specificity
+          index = index + 1
 def test_different_number_of_samples(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list,
                                      different_number_of_samples, output_folder):
     train_data, train_header, train_labels, train_user_ids = get_data(train_file)
@@ -62,7 +87,7 @@ def test_different_number_of_samples(train_file, test_file, methods_to_run_list,
                                                                                                  test_data, labels, train_index,
                                                                                                  test_index, test_user_ids, options,
                                                                                                  test_header, test_file_to_get_users,
-                                                                                                 options[5])
+                                                                                                 class_1_weight = options[5])
             precisions[index] = precision
             recalls[index] = recall
             specificities[index] = specificity
@@ -118,7 +143,7 @@ def test_different_subsets(train_folder, test_file, methods_to_run_list, test_fi
                                                                                                      test_data, labels, train_index,
                                                                                                      test_index, test_user_ids, options,
                                                                                                      test_header, test_file_to_get_users,
-                                                                                                     options[5])
+                                                                                                     class_1_weight = options[5])
                 precisions[index] = precision
                 recalls[index] = recall
                 specificities[index] = specificity
@@ -146,77 +171,165 @@ def test_different_subsets(train_folder, test_file, methods_to_run_list, test_fi
     pyplot.close()
 
 def generate_train_test_error_for_different_kernels(train_file, test_file, output_folder):
-    methods_to_run_list
     train_data, train_header, train_labels, train_user_ids = get_data(train_file)
     test_data, test_header, test_labels, test_user_ids = get_data(test_file)
-    test_labels = np.concatenate((train_labels, test_labels))
-    train_labels = np.concatenate((train_labels, train_labels))
+    train_test_labels = np.concatenate((train_labels, test_labels))
+    train_train_labels = np.concatenate((train_labels, train_labels))
     train_size = len(train_labels)
     test_size = len(test_labels)
     train_index = range(train_size)
     test_index = range(train_size, (train_size + test_size))
     train_test_index = range(train_size, (train_size + train_size))
     # Run linear SVM.
-    train_error_1inear = run_feature_selection_and_classification(['univariate_fea_selection', 'linear_svm'],
-                                                                  train_data, train_data, train_labels, train_index,
-                                                                  train_index, train_user_ids,
-                                                                  [7, 10, 'linear', 0, ''], train_header, '')[0]
-    test_error_linear = run_feature_selection_and_classification(['univariate_fea_selection', 'linear_svm'],
-                                                                 train_data, test_data, test_labels, train_index,
-                                                                 test_index, test_user_ids, [7, 10, 'linear', 0, ''],
+    train_error_1inear = run_feature_selection_and_classification(['linear_SVC', 'linear_svm'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                  [0.002, 55, 'linear', 0, ''], train_header, '')[0]
+    test_error_linear = run_feature_selection_and_classification(['linear_SVC', 'linear_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, 55, 'linear', 0, ''],
                                                                  test_header, '')[0]
 
     # Run poly SVM with degree 2.
-    train_error_poly_2 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
-                                                                  train_data, train_data, train_labels, train_index,
-                                                                  train_index, train_user_ids,
-                                                                  [7, 10, 2, 0, ''], train_header, '')[0]
-    test_error_poly_2 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
-                                                                 train_data, test_data, test_labels, train_index,
-                                                                 test_index, test_user_ids, [7, 10, 2, 0, ''],
+    train_error_poly_2 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                  [0.002, 40, 2, 0, ''], train_header, '')[0]
+    test_error_poly_2 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, 40, 2, 0, ''],
                                                                  test_header, '')[0]
     # Run poly SVM with degree 3.
-    train_error_poly_3 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
-                                                                  train_data, train_data, train_labels, train_index,
-                                                                  train_index, train_user_ids,
-                                                                  [7, 10, 3, 0, ''], train_header, '')[0]
-    test_error_poly_3 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
-                                                                 train_data, test_data, test_labels, train_index,
-                                                                 test_index, test_user_ids, [7, 10, 3, 0, ''],
+    train_error_poly_3 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                  [0.002, 70, 3, 0, ''], train_header, '')[0]
+    test_error_poly_3 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, 70, 3, 0, ''],
                                                                  test_header, '')[0]
     # Run poly SVM with degree 4.
-    train_error_poly_4 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
-                                                                  train_data, train_data, train_labels, train_index,
-                                                                  train_index, train_user_ids,
-                                                                  [7, 10, 4, 0, ''], train_header, '')[0]
-    test_error_poly_4 = run_feature_selection_and_classification(['univariate_fea_selection', 'poly_svm'],
-                                                                 train_data, test_data, test_labels, train_index,
-                                                                 test_index, test_user_ids, [7, 10, 4, 0, ''],
+    train_error_poly_4 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                  [0.002, 55, 4, 0, ''], train_header, '')[0]
+    test_error_poly_4 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, 55, 4, 0, ''],
                                                                  test_header, '')[0]
+
+    # Run poly SVM with degree 10.
+    train_error_poly_10 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                  [0.002, 1, 10, 0, ''], train_header, '')[0]
+    test_error_poly_10 = run_feature_selection_and_classification(['linear_SVC', 'poly_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, 1, 10, 0, ''],
+                                                                 test_header, '')[0]
+    
     # Run RBF Kernel SVM.
     train_error_rbf_kernel = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
-                                                                      train_data, train_data, train_labels, train_index,
-                                                                      train_index, train_user_ids,
-                                                                      [7, 10, 'rbf', 0, ''], train_header, '')[0]
+                                                                      train_data, train_data, train_train_labels, train_index,
+                                                                      train_test_index, train_user_ids,
+                                                                      [7, 70, 'rbf', 0, ''], train_header, '')[0]
     test_error_rbf_kernel = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
-                                                                     train_data, test_data, test_labels, train_index,
-                                                                     test_index, test_user_ids, [7, 10, 'rbf', 0, ''],
+                                                                     train_data, test_data, train_test_labels, train_index,
+                                                                     test_index, test_user_ids, [7, 70, 'rbf', 0, ''],
                                                                      test_header, '')[0]
     pyplot.figure()
-    pyplot.ylim((-0.01, 1.1))
     pyplot.xlabel('Different Kernels')
-    index = [1, 2, 3, 4, 5]
-    pyplot.xticks(index, ['Linear SVM', 'Poly SVM Degree 2', 'Poly SVM Degree 3',
-                          'Poly SVM Degree 4', 'RBF SVM'], rotation = 'vertical')
+    index = [1, 2, 3, 4, 5, 6]
+    pyplot.xticks(index, ['Linear', 'Poly Degree 2', 'Poly Degree 3',
+                          'Poly Degree 4', 'Poly Degree 10', 'RBF'], fontsize=7)
     pyplot.plot(index, [train_error_1inear, train_error_poly_2, train_error_poly_3,
-                        train_error_poly_4, train_error_rbf_kernel], color = 'r')
-    pyplot.plot(index, [test_error_1inear, test_error_poly_2, test_error_poly_3,
-                        test_error_poly_4, test_error_rbf_kernel], color = 'b')
+                        train_error_poly_4, train_error_poly_10, train_error_rbf_kernel], color = 'r')
+    pyplot.plot(index, [test_error_linear, test_error_poly_2, test_error_poly_3,
+                        test_error_poly_4, test_error_poly_10, test_error_rbf_kernel], color = 'b')
     pyplot.legend(['Training Error', 'Testing Error'])
     pyplot.savefig(path.join(output_folder, 'SVM_with_different_kernels.png'))            
     pyplot.close()
 
+def generate_train_test_error_for_different_MLP(train_file, test_file, output_folder):
+    train_data, train_header, train_labels, train_user_ids = get_data(train_file)
+    test_data, test_header, test_labels, test_user_ids = get_data(test_file)
+    train_test_labels = np.concatenate((train_labels, test_labels))
+    train_train_labels = np.concatenate((train_labels, train_labels))
+    train_size = len(train_labels)
+    test_size = len(test_labels)
+    train_index = range(train_size)
+    test_index = range(train_size, (train_size + test_size))
+    train_test_index = range(train_size, (train_size + train_size))
+    # Run MLP with 3 layer.
+    train_error_3 = run_feature_selection_and_classification(['linear_SVC', 'preceptron'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                 [0.002, tuple([50] * 3), '', 0], train_header, '')[0]
+    test_error_3 = run_feature_selection_and_classification(['linear_SVC', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, tuple([50] * 3), '', 0],
+                                                                 test_header, '')[0]
+
+    # Run MLP with 5 layer.
+    train_error_5 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                  [7, tuple([50] * 5), '', 0], train_header, '')[0]
+    test_error_5 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids,  [7, tuple([50] * 5), '', 0],
+                                                                 test_header, '')[0]
+    # Run MLP with 10 layer.
+    train_error_10 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                   [7, tuple([50] * 10), '', 0], train_header, '')[0]
+    test_error_10 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids,  [7, tuple([50] * 10), '', 0],
+                                                                 test_header, '')[0]
+    # Run MLP with 20 layer.
+    train_error_13 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                   [7, tuple([50] * 13), '', 0], train_header, '')[0]
+    test_error_13 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids,  [7, tuple([50] * 13), '', 0],
+                                                                 test_header, '')[0]
+
+    # Run MLP with 50 layer.
+    train_error_15 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                  train_data, train_data, train_train_labels, train_index,
+                                                                  train_test_index, train_user_ids,
+                                                                   [7, tuple([50] * 15), '', 0], train_header, '')[0]
+    test_error_15 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids,  [7, tuple([50] * 15), '', 0],
+                                                                 test_header, '')[0]
     
+    # Run MLP with 100 layer.
+    train_error_20 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                      train_data, train_data, train_train_labels, train_index,
+                                                                      train_test_index, train_user_ids,
+                                                                       [7, tuple([50] * 20), '', 0], train_header, '')[0]
+    test_error_20 = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                     train_data, test_data, train_test_labels, train_index,
+                                                                     test_index, test_user_ids,  [7, tuple([50] * 20), '', 0],
+                                                                     test_header, '')[0]
+    pyplot.figure()
+    pyplot.xlabel('Different Number of Layers')
+    index = [1, 2, 3, 4, 5, 6]
+    pyplot.xticks(index, ['3', '5', '10', '13', '15', '20'], fontsize=7)
+    pyplot.plot(index, [train_error_3, train_error_5, train_error_10,
+                        train_error_13, train_error_15, train_error_20], color = 'r')
+    pyplot.plot(index, [test_error_3, test_error_5, test_error_10,
+                        test_error_13, test_error_15, test_error_20], color = 'b')
+    pyplot.legend(['Training Error', 'Testing Error'])
+    pyplot.savefig(path.join(output_folder, 'MLP_with_different_layers.png'))            
+    pyplot.close()
+
+        
   
 
 if __name__ == '__main__':

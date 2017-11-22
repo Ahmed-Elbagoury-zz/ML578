@@ -1,3 +1,5 @@
 from run import run
-for i in range(1, 23):
-    run(i)
+#for i in range(30, 36):
+#    run(i)
+run(39)
+run(40)

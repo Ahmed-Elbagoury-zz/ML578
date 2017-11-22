@@ -1,5 +1,8 @@
 import csv
 import numpy as np
+import math
+
+sigmoid = lambda x : 1.0/(1.0 + math.e**(-1 * x))
 def load_data(input_path):
 	rows = []
 	with open(input_path, 'r') as csvfile:
