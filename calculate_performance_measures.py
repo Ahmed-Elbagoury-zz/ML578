@@ -26,5 +26,4 @@ def calculate_performance_measures(predicted_labels, actual_labels):
 	specificity = 0
     #print 'TP = ', TP, 'FP = ', FP, 'FN = ', FN, 'TN = ', TN
     #print '%f/%f+%f = %f' %(TP, TP, FP, TP / float(TP + FP))
-    print 'error = ', error, 'recall = ', recall, 'precision = ', precision, 'specificity = ', specificity
     return error, recall, precision, specificity

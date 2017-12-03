@@ -4,6 +4,7 @@ from kfold_cross_validation import run_feature_selection_and_classification
 from matplotlib import pyplot
 from os import path
 import os
+import matplotlib.pyplot as plt
 
 def get_data(data_file):
     csvfile = open(data_file,'rb')
@@ -170,6 +171,327 @@ def test_different_subsets(train_folder, test_file, methods_to_run_list, test_fi
             pyplot.savefig(path.join(output_folder, 'different_subsets_'+options[2]+'_'+methods_to_run[1]+'_with_class_weights.png'))            
     pyplot.close()
 
+def plot_roc(fea_selection, classification, file_name, specificity, sensitivity):
+    specificity_index = sorted(enumerate(specificity), key = lambda tup : tup[1])
+    specificity = [tup[1] for tup in specificity_index]
+    sensitivity = [sensitivity[tup[0]] for tup in specificity_index]
+    auc = np.trapz(sensitivity, x=specificity)
+    plt.clf()
+    plt.xlim((0, 1))
+    plt.xlabel('Specificity')
+    plt.ylabel('Sensitivity')
+    plt.title('%s, %s. AUC  = %f' %(fea_selection, classification, auc))
+    plt.plot(specificity,sensitivity)
+    plt.savefig(file_name)
+
+def generate_ROC(train_file, test_file, threshold_list = -1):
+    roc_prefix = 'ROC'
+    if not os.path.exists(roc_prefix):
+        os.makedirs(roc_prefix)
+    train_data, train_header, train_labels, train_user_ids = get_data(train_file)
+    test_data, test_header, test_labels, test_user_ids = get_data(test_file)
+    train_test_labels = np.concatenate((train_labels, test_labels))
+    train_train_labels = np.concatenate((train_labels, train_labels))
+    train_size = len(train_labels)
+    test_size = len(test_labels)
+    train_index = range(train_size)
+    test_index = range(train_size, (train_size + test_size))
+    train_test_index = range(train_size, (train_size + train_size))
+    
+    test_error,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, tuple([50] * 10), '', 0],
+                                                                 test_header, '', threshold_list = threshold_list)
+    fea_selection_method = 'L$_1$-based fea selection'
+    classification_method = 'Perceptron'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+    print '>>linear_SVC, preceptron'
+    print '\t', 'test_error', test_error
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+    c = 1
+    test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'one_class_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, c, 'linear', 0, ''],
+                                                                 test_header, '', threshold_list = threshold_list)
+    fea_selection_method = 'L$_1$-based fea selection'
+    classification_method = 'One-Class Linear SVM'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+    print '>>linear_SVC, one class linear_svm, %d' %(c)
+    print '\t', 'test_error_linear', test_error_linear
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+    c = 85
+    test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'one_class_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, c, 'rbf', 0, ''],
+                                                                 test_header, '', threshold_list = threshold_list)
+    fea_selection_method = 'L$_1$-based fea selection'
+    classification_method = 'One-Class Kernel SVM (RBF)'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+
+    print '>>linear_SVC, one class rbf_svm, %d' %(c)
+    print '\t', 'test_error_linear', test_error_linear
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+#-----------------------
+    class_1_weight = 1
+    c = 55
+    test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'linear_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, c, 'linear', 0, ''],
+                                                                 test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+    fea_selection_method = 'L$_1$-based fea selection'
+    classification_method = 'Linear SVM'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+    print '>>linear_SVC, linear_svm, %d. class_1_weight = %d' %(c, class_1_weight)
+    print '\t', 'test_error_linear', test_error_linear
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+
+    c = 70
+    test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [7, c, 'rbf', 0, ''],
+                                                                 test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+    fea_selection_method = 'Chi-squared fea selection'
+    classification_method = 'Kernel SVM (RBF)'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+
+    print '>>univariate_fea_selection, linear_svm, %d. class_1_weight = %d' %(c, class_1_weight)
+    print '\t', 'test_error_linear', test_error_linear
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+    c = 85
+    class_1_weight = 10
+    test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'linear_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, c, 'linear', 0, ''],
+                                                                 test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+
+    fea_selection_method = 'L$_1$-based fea selection'
+    classification_method = 'Linear SVM, class 1 weight = %d' %(class_1_weight)
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s_%d_class_1_weight.png' %(roc_prefix, fea_selection_method, classification_method, class_1_weight), specificity, recall)
+
+    print '>>linear_SVC, linear_svm, %d. class_1_weight = %d' %(c, class_1_weight)
+    print '\t', 'test_error_linear', test_error_linear
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+
+    c = 1
+    test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [7, c, 'rbf', 0, ''],
+                                                                 test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+    
+    fea_selection_method = 'Chi-squared fea selection'
+    classification_method = 'Kernel SVM (RBF), class 1 weight = %d' %(class_1_weight)
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s_%d_class_1_weight.png' %(roc_prefix, fea_selection_method, classification_method, class_1_weight), specificity, recall)
+
+    print '>>univariate_fea_selection, linear_svm, %d. class_1_weight = %d' %(c, class_1_weight)
+    print '\t', 'test_error_linear', test_error_linear
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+
+def generate_test_error_for_kernels(train_file, test_file, threshold_list = -1):
+    roc_prefix = 'ROC'
+    if not os.path.exists(roc_prefix):
+        os.makedirs(roc_prefix)
+    train_data, train_header, train_labels, train_user_ids = get_data(train_file)
+    test_data, test_header, test_labels, test_user_ids = get_data(test_file)
+    train_test_labels = np.concatenate((train_labels, test_labels))
+    train_train_labels = np.concatenate((train_labels, train_labels))
+    train_size = len(train_labels)
+    test_size = len(test_labels)
+    train_index = range(train_size)
+    test_index = range(train_size, (train_size + test_size))
+    train_test_index = range(train_size, (train_size + train_size))
+    
+    test_error,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids, [0.002, tuple([50] * 10), '', 0],
+                                                                 test_header, '', threshold_list = threshold_list)
+    fea_selection_method = 'L$_1$-based fea selection'
+    classification_method = 'Perceptron'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+    print '>>linear_SVC, preceptron'
+    print '\t', 'test_error', test_error
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+
+    test_error,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'preceptron'],
+                                                                 train_data, test_data, train_test_labels, train_index,
+                                                                 test_index, test_user_ids,  [7, tuple([50] * 5), '', 0],
+                                                                 test_header, '', threshold_list = threshold_list)
+    fea_selection_method = 'Chi-squared fea selection'
+    classification_method = 'Perceptron'
+    plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+    print 'univariate_fea_selection, preceptron'
+    print '\t', 'test_error', test_error
+    print '\t', 'recall', recall
+    print '\t', 'precision', precision
+    print '\t', 'specificity', specificity
+    
+    c_list = [(55, 55), (1, 1)]
+    for c in c_list:
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'one_class_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [7, c[0], 'linear', 0, ''],
+                                                                   test_header, '', threshold_list = threshold_list)
+      fea_selection_method = 'Chi-squared fea selection'
+      classification_method = 'Linear SVM'
+      plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+      print '>>univariate_fea_selection, one class linear_svm, %d' %(c[0])
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'one_class_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [0.002, c[1], 'linear', 0, ''],
+                                                                   test_header, '', threshold_list = threshold_list)
+      fea_selection_method = 'L$_1$-based fea selection'
+      classification_method = 'One-Class Linear SVM'
+      plot_roc(fea_selection_method, classification_method, '%s/%s_%s.png' %(roc_prefix, fea_selection_method, classification_method), specificity, recall)
+      print '>>linear_SVC, one class linear_svm, %d' %(c[1])
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+    c_list = [(70, 70), (85, 85)]
+    for c in c_list:
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'one_class_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [7, c[0], 'rbf', 0, ''],
+                                                                   test_header, '', threshold_list = threshold_list)
+      print '>>univariate_fea_selection, one class rbf_svm, %d' %(c[0])
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'one_class_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [0.002, c[1], 'rbf', 0, ''],
+                                                                   test_header, '', threshold_list = threshold_list)
+      print '>>linear_SVC, one class rbf_svm, %d' %(c[1])
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+#-----------------------
+
+    c_list = [(25, 85), (10, 55)]
+    class_1_weight = 1
+    for c in c_list:
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'linear_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [7, c[0], 'linear', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>univariate_fea_selection, linear_svm, %d. class_1_weight = %d' %(c[0], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'linear_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [0.002, c[1], 'linear', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>linear_SVC, linear_svm, %d. class_1_weight = %d' %(c[1], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+
+    c_list = [(1, 1), (70, 55)]
+    for c in c_list:
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [7, c[0], 'rbf', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>univariate_fea_selection, linear_svm, %d. class_1_weight = %d' %(c[0], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'kernel_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [0.002, c[1], 'rbf', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>linear_SVC, linear_svm, %d. class_1_weight = %d' %(c[1], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+    c_list = [(10, 25), (10, 85)]
+    class_1_weight = 10
+    for c in c_list:
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'linear_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [7, c[0], 'linear', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>univariate_fea_selection, linear_svm, %d. class_1_weight = %d' %(c[0], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'linear_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [0.002, c[1], 'linear', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>linear_SVC, linear_svm, %d. class_1_weight = %d' %(c[1], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+
+    c_list = [(40, 55), (1, 1)]
+    for c in c_list:
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['univariate_fea_selection', 'kernel_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [7, c[0], 'rbf', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>univariate_fea_selection, linear_svm, %d. class_1_weight = %d' %(c[0], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+      test_error_linear,recall, precision, specificity = run_feature_selection_and_classification(['linear_SVC', 'kernel_svm'],
+                                                                   train_data, test_data, train_test_labels, train_index,
+                                                                   test_index, test_user_ids, [0.002, c[1], 'rbf', 0, ''],
+                                                                   test_header, '', class_1_weight = class_1_weight, threshold_list = threshold_list)
+      print '>>linear_SVC, linear_svm, %d. class_1_weight = %d' %(c[1], class_1_weight)
+      print '\t', 'test_error_linear', test_error_linear
+      print '\t', 'recall', recall
+      print '\t', 'precision', precision
+      print '\t', 'specificity', specificity
+
+
 def generate_train_test_error_for_different_kernels(train_file, test_file, output_folder):
     train_data, train_header, train_labels, train_user_ids = get_data(train_file)
     test_data, test_header, test_labels, test_user_ids = get_data(test_file)
@@ -333,24 +655,28 @@ def generate_train_test_error_for_different_MLP(train_file, test_file, output_fo
   
 
 if __name__ == '__main__':
-    train_file = 'train_subsets/0_train.csv'
-    test_file = 'test_subsets/0_test.csv'
+    # train_file = 'train_subsets/0_train.csv'
+    # test_file = 'test_subsets/0_test.csv'
     
-    number_of_features_to_select = 7
+    # number_of_features_to_select = 7
     
-    # methods_to_run = ['linear_SVC', 'kernel_svm']
-    # C = 40
-    # class_1_weight = 10
-    # kernel = 'rbf'
+    # # methods_to_run = ['linear_SVC', 'kernel_svm']
+    # # C = 40
+    # # class_1_weight = 10
+    # # kernel = 'rbf'
+
+    # # write_prediction = 0
+    # # prediction_file = ''
+    # # sparsity_param = 0.002
+    # # options = [sparsity_param, C, kernel, write_prediction, prediction_file]
 
     # write_prediction = 0
     # prediction_file = ''
-    # sparsity_param = 0.002
-    # options = [sparsity_param, C, kernel, write_prediction, prediction_file]
+    # methods_to_run = ['linear_SVC', 'preceptron']
+    # options = [number_of_features_to_select, [100] * 10, '', write_prediction, prediction_file]
+    # classify_test_users(train_file, test_file, methods_to_run, '', options)
 
-    write_prediction = 0
-    prediction_file = ''
-    methods_to_run = ['linear_SVC', 'preceptron']
-    options = [number_of_features_to_select, [100] * 10, '', write_prediction, prediction_file]
-    classify_test_users(train_file, test_file, methods_to_run, '', options)
+    train_file = path.join('train_subsets', '0_train.csv')
+    test_file = path.join('train_subsets', '0_test.csv')
+    generate_test_error_for_kernels(train_file, test_file)
 

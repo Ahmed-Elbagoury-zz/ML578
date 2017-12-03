@@ -1,8 +1,17 @@
 import csv
 import numpy as np
 import math
+from decimal import Decimal
+import warnings
+from scipy.stats import logistic
 
-sigmoid = lambda x : 1.0/(1.0 + math.e**(-1 * x))
+def sigmoid(x):
+	# warnings.filterwarnings('error')
+	# try: 
+	# 	return 1.0/(1.0 + math.e**(-1 * x))
+	# except Warning:
+	# 	print '>>>>>>>',  x
+	logistic.cdf(x)
 def load_data(input_path):
 	rows = []
 	with open(input_path, 'r') as csvfile:

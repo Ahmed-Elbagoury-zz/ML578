@@ -57,8 +57,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
         train_data = train_data[:, selected_features_indices]
         validation_data = validation_data[:, selected_features_indices]
         selected_featuees = np.array(header)[np.array(selected_features_indices)+2]
-        for selected_feature in range(len(selected_featuees)):
-            print(selected_featuees[selected_feature])
+        # for selected_feature in range(len(selected_featuees)):
+            # print(selected_featuees[selected_feature])
     if 'linear_SVC' in methods_to_run:
         # Run feature selection.
         sparsity_param = options[0]
@@ -67,8 +67,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
         train_data = train_data[:, selected_features_indices]
         validation_data = validation_data[:, selected_features_indices]
         selected_featuees = np.array(header)[np.array(selected_features_indices)+2]
-        for selected_feature in range(len(selected_featuees)):
-            print(selected_featuees[selected_feature])
+        # for selected_feature in range(len(selected_featuees)):
+            # print(selected_featuees[selected_feature])
     if 'linear_svm' in methods_to_run: # Run linear SVM.
         C = options[1]
         linear_svm_model = train_linear_svm(train_data, labels[train_index], C, class_1_weight)
@@ -152,8 +152,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
                 specificity_list.append(specificity)
             return error_list, recall_list, precision_list, specificity_list
     if 'preceptron' in methods_to_run: # Run multilayer preceptron.
-        clf = MLPClassifier(hidden_layer_sizes = options[1], verbose=True)
-        clf.fit(train_data, labels[train_index])
+        clf = MLPClassifier(hidden_layer_sizes = options[1], verbose=False)
+        clf.fit(train_data, labels[train_index].ravel())
         if threshold_list == -1:
             predicted_labels = clf.predict(validation_data)
             error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
@@ -164,7 +164,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
             for threshold in threshold_list:
                 predicted_values = clf.predict_proba(validation_data)
-                predicted_labels = [1 if (val[1] if threshold == 0 else sigmoid(val[1])) > threshold else 0 for val in pred_confidence]
+                predicted_labels = [1 if (val[1] if threshold == 0 else sigmoid(val[1])) > threshold else 0 for val in predicted_values]
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error_list.append(error)
@@ -185,7 +185,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
             for threshold in threshold_list:
                 predicted_values = clf.predict_proba(validation_data)
-                predicted_labels = [1 if (val[1] if threshold == 0 else sigmoid(val[1])) > threshold else 0 for val in pred_confidence]
+                predicted_labels = [1 if (val[1] if threshold == 0 else sigmoid(val[1])) > threshold else 0 for val in predicted_values]
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error_list.append(error)

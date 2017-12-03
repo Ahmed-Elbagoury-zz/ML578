@@ -13,8 +13,11 @@ from select_feature_selection_Naive_Bayes_using_kfold_CV import select_feature_s
 from classify_test_users import test_different_subsets
 from classify_test_users import generate_train_test_error_for_different_kernels
 from classify_test_users import generate_train_test_error_for_different_MLP
+from classify_test_users import generate_test_error_for_kernels
+from classify_test_users import generate_ROC
 import os.path as path
 import os
+import numpy as np
 def run (step_number):
     if step_number == 1:
         # Step 1: Preprocess transcation data.
@@ -514,4 +517,19 @@ def run (step_number):
         if not path.exists(output_folder):
             os.makedirs(output_folder)
         generate_train_test_error_for_different_MLP(train_file, test_file, output_folder)
+    elif step_number == 42:
+        train_file = path.join('train_subsets', '0_train.csv')
+        test_file = path.join('train_subsets', '0_test.csv')
+        generate_test_error_for_kernels(train_file, test_file)
+    elif step_number == 43:
+        print 'In step_number', step_number
+        train_file = path.join('train_subsets', '0_train.csv')
+        test_file = path.join('train_subsets', '0_test.csv')
+        # threshold_list = [0.25, 0.5, 0.75]
+        threshold_list = list(np.arange(0.0, 1, 0.1))
+        generate_ROC(train_file, test_file, threshold_list = threshold_list)
  
+
+if __name__ == '__main__':
+    step_number = 43
+    run(step_number)
