@@ -221,7 +221,7 @@ def get_threshold_list(x):
     return [x[len(x)/num_steps * i] for i in range(num_steps)] + [max(x) + 1]
 
 def kfold_cross_validation(k, train_file, methods_to_run,
-                           output_folder, options, class_1_weight = 1, compute_var = False):
+                           output_folder, options, class_1_weight = 1, return_measures = False):
     train_csvfile = open(train_file,'rb')
     lines = csv.reader(train_csvfile, delimiter = ',')
     lines = list(lines)
@@ -284,7 +284,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
         measures[1, i] = recall
         measures[2, i] = precision
         measures[3, i] = specificity
-    if compute_var:
+    if return_measures:
         return measures[0]
     stats_vals = []
     alpha_val = 0.95
