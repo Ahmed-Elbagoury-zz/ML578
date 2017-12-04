@@ -1,0 +1,59 @@
+Dependencies
+-------------
+ 	-Required libraries are listed in the requirements.txt file.
+ 	-On a linux machine, you can install them using pip install -r requirements.txt
+
+ Running the code
+ ----------------
+ 	-The entry point to the code is "run.py" file. 
+ 	-The "main" method in "run.py" file calls a method run with a "step_number" as a parameter (listed below is what each number represents)
+ 	-The step_number is passed to the main method as an argument to the program. For example to run step number 20 type
+ 		python run.py 20
+ 		Not that the first (and only parameter) has to be integer otherwise the program will print an error message and exit
+
+
+
+ 	Step 1: Preprocess transcation data.
+ 	Step 2: Preprocess user_logs data
+ 	Step 3: Join all tables based on user_id
+ 	Step 4: Split joined table file into 10 subsets randomly.
+ 	Step 5: Generate features histogram.
+ 	Step 6: Run PCA.
+ 	Step 7: Run univariate_fea_selection fearure selection.
+ 	Step 8: Run L1-based feature selection.
+ 	Step 9: Run 10 fold cross validation to choose C for linear SVM with univariate_fea_selection.
+ 	Step 10: Run 10 fold cross validation to choose C for linear SVM with L1-based feature selection.
+ 	Step 11: Run 10 fold cross validation to choose C for kernel SVM with Chi-squared Feature Selection.
+ 	Step 12: Run 10 fold cross validation to choose C for kernel SVM with L1-based feature selection.
+ 	Step 13: Run 10 fold cross validation to choose C for one class linear SVM with L1-based feature selection.
+ 	Step 14: Run 10 fold cross validation to choose C for one class linear SVM with L1-based feature selection.
+ 	Step 15: Run 10 fold cross validation to choose C for one class kernel SVM with Chi-squared Feature Selection.
+ 	Step 16: Run 10 fold cross validation to choose C for one class kernel SVM with L1-based feature selection.
+ 	Step 17: For submitting on Kaggle, join the Kaggle test data with the other tables.
+ 	Step 18: Classify Kaggle test user, using SVM with C learned form 10 fold cross validation.
+ 	Step 19: Run 10 fold cross validation to choose C for linear SVM with Chi-squared Feature Selection.
+ 	Step 20: Run 10 fold cross validation to choose C for linear SVM with L1-based feature selection.
+ 	Step 21: Run 10 fold cross validation to choose C for kernel SVM with Chi-squared Feature Selection.
+ 	Step 22: Run 10 fold cross validation to choose C for kernel SVM with L1-based feature selection.
+ 	Step 23: 10 fold CV for MLP using univariate_fea_selection.
+ 	Step 24: 10 fold CV for MLP using linear_SVC.
+ 	Step 25: 10 fold CV for Naive Bayes using univariate_fea_selection.
+ 	Step 26: 10 fold CV for Naive Bayes using linear_SVC.
+ 	Step 27: Test different number of samples for different classification algorithms.
+ 	Step 28: Test different training subsets for different classification algorithms.
+ 	Step 29: Test different thresholds and plot the ROC curve for different classification algorithms.
+ 	Step 30: Run 10 fold cross validation to choose C for poly SVM degree 2 with univariate_fea_selection.
+ 	Step 31: Run 10 fold cross validation to choose C for poly SVM degree 2 with linear_SVC.
+ 	Step 32: Run 10 fold cross validation to choose C for poly SVM degree 3 with univariate_fea_selection.
+ 	Step 33: Run 10 fold cross validation to choose C for poly SVM degree 3 with linear_SVC.
+ 	Step 34: Run 10 fold cross validation to choose C for poly SVM degree 4 with univariate_fea_selection.
+ 	Step 35: Run 10 fold cross validation to choose C for poly SVM degree 4 with linear_SVC.
+ 	Step 36: Run 10 fold cross validation to choose C for poly SVM degree 4 with univariate_fea_selection.
+ 	Step 37: Run 10 fold cross validation to choose C for poly SVM degree 4 with linear_SVC.
+ 	Step 38: Report training and testing errors for different SVM kernels.
+ 	Step 39: 10 fold CV for MLP using univariate_fea_selection.
+ 	Step 40: 10 fold CV for MLP using linear_SVC.
+ 	Step 41: Report training and testing errors for different MLP layers.
+ 	Step 42: Generate test error
+ 	Step 43: Plot ROC and compute AUC
+ 	Step 44: Perform Hypothesis testing
