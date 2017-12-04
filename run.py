@@ -18,6 +18,7 @@ from classify_test_users import generate_ROC
 import os.path as path
 import os
 import numpy as np
+from hypothesis_testing import do_hypothesis_testing
 def run (step_number):
     if step_number == 1:
         # Step 1: Preprocess transcation data.
@@ -528,8 +529,11 @@ def run (step_number):
         # threshold_list = [0.25, 0.5, 0.75]
         threshold_list = list(np.arange(0.0, 1, 0.1))
         generate_ROC(train_file, test_file, threshold_list = threshold_list)
- 
+    elif step_number == 44:
+        k = 10
+        train_file = path.join('train_subsets', '0_train.csv')
+        do_hypothesis_testing(train_file, k)
 
 if __name__ == '__main__':
-    step_number = 43
+    step_number = 44
     run(step_number)

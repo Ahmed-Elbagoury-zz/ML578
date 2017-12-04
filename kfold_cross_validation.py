@@ -13,6 +13,8 @@ import math
 from sklearn.neural_network import MLPClassifier
 from helper import sigmoid
 import math
+from scipy import stats
+import scipy as sp
 
 def write_predictions(validation_users_id, predicted_labels, options, test_file_to_get_users):
     write_prediction = options[3]
@@ -79,9 +81,10 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error, recall, precision, specificity
         else:
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
+            predicted_labels, predicted_values = classify(linear_svm_model, validation_data)
+            threshold_list = get_threshold_list(predicted_values)
             for threshold in threshold_list:
-                print 'validation_data.shape', validation_data.shape
-                predicted_labels, predicted_values = classify(linear_svm_model, validation_data, threshold = threshold)
+                predicted_labels = [linear_svm_model.classes_[1] if val > threshold else linear_svm_model.classes_[0] for val in predicted_values]
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 error_list.append(error)
@@ -99,8 +102,10 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error, recall, precision, specificity
         else:
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
+            predicted_labels, predicted_values = classify(kernel_svm_model, validation_data)
+            threshold_list = get_threshold_list(predicted_values)
             for threshold in threshold_list:
-                predicted_labels, predicted_values = classify(kernel_svm_model, validation_data, threshold = threshold)
+                predicted_labels = [kernel_svm_model.classes_[1] if val > threshold else kernel_svm_model.classes_[0] for val in predicted_values]
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 error_list.append(error)
@@ -122,8 +127,10 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error, recall, precision, specificity
         else:
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
+            predicted_labels, predicted_values = classify(kernel_svm_model, min_max_normalize(validation_data), threshold = threshold_list)
+            threshold_list = get_threshold_list(predicted_values)
             for threshold in threshold_list:
-                predicted_labels, predicted_values = classify(kernel_svm_model, min_max_normalize(validation_data), threshold = threshold_list)
+                predicted_labels = [kernel_svm_model.classes_[1] if val > threshold else kernel_svm_model.classes_[0] for val in predicted_values]
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 error_list.append(error)
@@ -142,8 +149,10 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error, recall, precision, specificity
         else:
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
+            predicted_labels, predicted_values = classify_one_class_svm(one_class_svm_model, validation_data, threshold = 1)
+            threshold_list = get_threshold_list(predicted_values)
             for threshold in threshold_list:
-                predicted_labels, predicted_values = classify_one_class_svm(one_class_svm_model, validation_data, threshold = threshold)
+                predicted_labels = [1 if val > threshold else 0 for val in predicted_values]
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)    
                 error_list.append(error)
@@ -152,7 +161,8 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
                 specificity_list.append(specificity)
             return error_list, recall_list, precision_list, specificity_list
     if 'preceptron' in methods_to_run: # Run multilayer preceptron.
-        clf = MLPClassifier(hidden_layer_sizes = options[1], verbose=False)
+        clf = MLPClassifier(hidden_layer_sizes = options[1], verbose=False, random_state = 1
+)
         clf.fit(train_data, labels[train_index].ravel())
         if threshold_list == -1:
             predicted_labels = clf.predict(validation_data)
@@ -162,9 +172,10 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error, recall, precision, specificity 
         else:
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
+            predicted_values = clf.predict_proba(validation_data)
+            threshold_list = get_threshold_list([val[1] for val in predicted_values])
             for threshold in threshold_list:
-                predicted_values = clf.predict_proba(validation_data)
-                predicted_labels = [1 if (val[1] if threshold == 0 else sigmoid(val[1])) > threshold else 0 for val in predicted_values]
+                predicted_labels = [1 if val[1] > threshold else 0 for val in predicted_values]
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error_list.append(error)
@@ -174,7 +185,7 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error_list, recall_list, precision_list, specificity_list
     if 'naive_bayes' in methods_to_run:
         clf = GaussianNB()
-        clf.fit(train_data, labels[train_index])
+        clf.fit(train_data, labels[train_index].ravel())
         if threshold_list == -1:
             predicted_labels = clf.predict(validation_data)
             error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
@@ -183,9 +194,10 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
             return error, recall, precision, specificity
         else:
             error_list, recall_list, precision_list, specificity_list = [],[], [], []
+            predicted_values = clf.predict_proba(validation_data)
+            threshold_list = get_threshold_list([val[1] for val in predicted_values])
             for threshold in threshold_list:
-                predicted_values = clf.predict_proba(validation_data)
-                predicted_labels = [1 if (val[1] if threshold == 0 else sigmoid(val[1])) > threshold else 0 for val in predicted_values]
+                predicted_labels = [1 if val[1] > threshold else 0 for val in predicted_values]
                 error, recall, precision, specificity = calculate_performance_measures(predicted_labels, labels[validation_index])
                 write_predictions(validation_users_id, predicted_values, options, test_file_to_get_users)
                 error_list.append(error)
@@ -203,10 +215,13 @@ def run_feature_selection_and_classification(methods_to_run, train_data, validat
         return error, recall, precision, specificity
     return 0, 0, 0, 0
 
-from scipy import stats
-import scipy as sp
+def get_threshold_list(x):
+    x = sorted(x)
+    num_steps = 20
+    return [x[len(x)/num_steps * i] for i in range(num_steps)] + [max(x) + 1]
+
 def kfold_cross_validation(k, train_file, methods_to_run,
-                           output_folder, options, class_1_weight = 1):
+                           output_folder, options, class_1_weight = 1, compute_var = False):
     train_csvfile = open(train_file,'rb')
     lines = csv.reader(train_csvfile, delimiter = ',')
     lines = list(lines)
@@ -222,6 +237,7 @@ def kfold_cross_validation(k, train_file, methods_to_run,
     features_number = len(data[0])
     measures = np.zeros([4, k])
     for i in range(k):
+        print '\t', i
         start_i = int(math.floor(samples_number * i / k))
         end_i = int(math.floor(samples_number * (i + 1) / k))
         validation_index = range(start_i, end_i)
@@ -268,6 +284,8 @@ def kfold_cross_validation(k, train_file, methods_to_run,
         measures[1, i] = recall
         measures[2, i] = precision
         measures[3, i] = specificity
+    if compute_var:
+        return measures[0]
     stats_vals = []
     alpha_val = 0.95
     for i in range(4):
