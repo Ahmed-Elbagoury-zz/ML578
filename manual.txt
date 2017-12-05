@@ -54,5 +54,5 @@ Dependencies
  	Step 40: 10 fold CV for MLP using linear_SVC.
  	Step 41: Report training and testing errors for different MLP layers.
  	Step 42: Generate test error
- 	Step 43: Run classification algorithms using different thresholds then plot the ROC curve and compute AUC
+ 	Step 43: Run classification algorithms using different classification thresholds then plot the ROC curve and compute AUC
  	Step 44: Perform Hypothesis testing
