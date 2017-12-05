@@ -41,7 +41,6 @@ Dependencies
  	Step 26: 10 fold CV for Naive Bayes using linear_SVC.
  	Step 27: Test different number of samples for different classification algorithms.
  	Step 28: Test different training subsets for different classification algorithms.
- 	Step 29: Test different thresholds and plot the ROC curve for different classification algorithms.
  	Step 30: Run 10 fold cross validation to choose C for poly SVM degree 2 with univariate_fea_selection.
  	Step 31: Run 10 fold cross validation to choose C for poly SVM degree 2 with linear_SVC.
  	Step 32: Run 10 fold cross validation to choose C for poly SVM degree 3 with univariate_fea_selection.
@@ -55,5 +54,5 @@ Dependencies
  	Step 40: 10 fold CV for MLP using linear_SVC.
  	Step 41: Report training and testing errors for different MLP layers.
  	Step 42: Generate test error
- 	Step 43: Plot ROC and compute AUC
+ 	Step 43: Run classification algorithms using different thresholds then plot the ROC curve and compute AUC
  	Step 44: Perform Hypothesis testing

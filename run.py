@@ -19,6 +19,8 @@ import os.path as path
 import os
 import numpy as np
 from hypothesis_testing import do_hypothesis_testing
+import sys
+
 def run (step_number):
     if step_number == 1:
         # Step 1: Preprocess transcation data.
@@ -355,37 +357,37 @@ def run (step_number):
         train_files_count = 10
         test_different_subsets(train_folder, test_file, methods_to_run_list, test_file_to_get_users,
                                options_list, output_folder, train_files_count)
-    elif step_number == 29:
-        # Step 29: Test different thresholds and plot the ROC curve for different classification algorithms.
-        # Parameters and feature selection methods are selected based on CV best in specificty.
-        threshold_list = [0.25, 0.5, 0.75, 1]
-        train_file = path.join('train_subsets', '0_train.csv')
-        test_file = path.join('train_subsets', '0_test.csv')
-        test_file_to_get_users = 'sample_submission.csv'
-        methods_to_run_list = [['linear_SVC', 'linear_svm'], ['univariate_fea_selection', 'kernel_svm'],
-                               ['linear_SVC', 'one_class_svm'], ['linear_SVC', 'one_class_svm'],
-                               ['linear_SVC', 'linear_svm'],['univariate_fea_selection', 'kernel_svm'],
-                               ['univariate_fea_selection', 'naive_bayes'], ['linear_SVC', 'preceptron']]
-        write_prediction = 0
-        prediction_file = ''
-        number_of_features_to_select = 7
-        sparsity_param = 0.002
-        linear_SVM_options = [sparsity_param, 55, 'linear', write_prediction, prediction_file]
-        kernel_SVM_options = [number_of_features_to_select, 70, 'rbf', write_prediction, prediction_file]
-        one_class_linear_SVM_options = [sparsity_param, 1, 'linear', write_prediction, prediction_file]
-        one_class_kernel_SVM_options = [sparsity_param, 85, 'rbf', write_prediction, prediction_file]
-        class_weight_linear_SVM_options = [sparsity_param, 85, 'linear', write_prediction, prediction_file, 10]
-        class_weight_kernel_SVM_options = [number_of_features_to_select, 1, 'rbf', write_prediction, prediction_file, 10]
-        naive_bayes_options = [number_of_features_to_select, 0, '', write_prediction, prediction_file]
-        preceptron_options = [sparsity_param, (50, 50, 50, 50, 50, 50, 50, 50, 50, 50), '', write_prediction, prediction_file]
-        options_list = [linear_SVM_options, kernel_SVM_options, one_class_linear_SVM_options, one_class_kernel_SVM_options,
-                        class_weight_linear_SVM_options, class_weight_kernel_SVM_options, naive_bayes_options,
-                        preceptron_options]
-        different_number_of_samples = range(2000, 22000, 2000)
-        output_folder = 'different_thresholds_experiment'
-        if not path.exists(output_folder):
-            os.makedirs(output_folder)
-        test_different_thresholds(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list, threshold_list, output_folder, class_1_weight = 1)
+    # elif step_number == 29:
+    #     # Step 29: Test different thresholds and plot the ROC curve for different classification algorithms.
+    #     # Parameters and feature selection methods are selected based on CV best in specificty.
+    #     threshold_list = [0.25, 0.5, 0.75, 1]
+    #     train_file = path.join('train_subsets', '0_train.csv')
+    #     test_file = path.join('train_subsets', '0_test.csv')
+    #     test_file_to_get_users = 'sample_submission.csv'
+    #     methods_to_run_list = [['linear_SVC', 'linear_svm'], ['univariate_fea_selection', 'kernel_svm'],
+    #                            ['linear_SVC', 'one_class_svm'], ['linear_SVC', 'one_class_svm'],
+    #                            ['linear_SVC', 'linear_svm'],['univariate_fea_selection', 'kernel_svm'],
+    #                            ['univariate_fea_selection', 'naive_bayes'], ['linear_SVC', 'preceptron']]
+    #     write_prediction = 0
+    #     prediction_file = ''
+    #     number_of_features_to_select = 7
+    #     sparsity_param = 0.002
+    #     linear_SVM_options = [sparsity_param, 55, 'linear', write_prediction, prediction_file]
+    #     kernel_SVM_options = [number_of_features_to_select, 70, 'rbf', write_prediction, prediction_file]
+    #     one_class_linear_SVM_options = [sparsity_param, 1, 'linear', write_prediction, prediction_file]
+    #     one_class_kernel_SVM_options = [sparsity_param, 85, 'rbf', write_prediction, prediction_file]
+    #     class_weight_linear_SVM_options = [sparsity_param, 85, 'linear', write_prediction, prediction_file, 10]
+    #     class_weight_kernel_SVM_options = [number_of_features_to_select, 1, 'rbf', write_prediction, prediction_file, 10]
+    #     naive_bayes_options = [number_of_features_to_select, 0, '', write_prediction, prediction_file]
+    #     preceptron_options = [sparsity_param, (50, 50, 50, 50, 50, 50, 50, 50, 50, 50), '', write_prediction, prediction_file]
+    #     options_list = [linear_SVM_options, kernel_SVM_options, one_class_linear_SVM_options, one_class_kernel_SVM_options,
+    #                     class_weight_linear_SVM_options, class_weight_kernel_SVM_options, naive_bayes_options,
+    #                     preceptron_options]
+    #     different_number_of_samples = range(2000, 22000, 2000)
+    #     output_folder = 'different_thresholds_experiment'
+    #     if not path.exists(output_folder):
+    #         os.makedirs(output_folder)
+    #     test_different_thresholds(train_file, test_file, methods_to_run_list, test_file_to_get_users, options_list, threshold_list, output_folder, class_1_weight = 1)
     elif step_number == 30:
         # Step 30: Run 10 fold cross validation to choose C for poly SVM degree 2 with univariate_fea_selection.
         train_file = path.join('train_subsets', '0_train.csv')
@@ -519,10 +521,12 @@ def run (step_number):
             os.makedirs(output_folder)
         generate_train_test_error_for_different_MLP(train_file, test_file, output_folder)
     elif step_number == 42:
+        #Step 42: Generate test error
         train_file = path.join('train_subsets', '0_train.csv')
         test_file = path.join('train_subsets', '0_test.csv')
         generate_test_error_for_kernels(train_file, test_file)
     elif step_number == 43:
+        #Step 43: Plot ROC and compute AUC
         print 'In step_number', step_number
         train_file = path.join('train_subsets', '0_train.csv')
         test_file = path.join('train_subsets', '0_test.csv')
@@ -530,10 +534,15 @@ def run (step_number):
         threshold_list = list(np.arange(0.0, 1, 0.1))
         generate_ROC(train_file, test_file, threshold_list = threshold_list)
     elif step_number == 44:
+        #Step 44: Perform Hypothesis testing
         k = 10
         train_file = path.join('train_subsets', '0_train.csv')
         do_hypothesis_testing(train_file, k)
 
 if __name__ == '__main__':
-    step_number = 44
+    step_number = 0
+    try:
+        step_number = int(sys.argv[1])
+    except ValueError:
+        print '\'%s\' is not a valid int. Please provide an integer' %(sys.argv[1])    
     run(step_number)
